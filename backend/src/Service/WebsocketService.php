@@ -4,15 +4,18 @@ namespace App\Service;
 
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
+use App\Service\MongoDBService;
 
 class WebsocketService implements MessageComponentInterface
 {
 
     protected $clients;
     protected $userConnections = [];
+    protected $mongoDBService;
 
-    public function __construct() {
+    public function __construct(MongoDBService $mongoDBService) {
         $this->clients = new \SplObjectStorage;
+        $this->mongoDBService = $mongoDBService;
     }
 
     public function onOpen(ConnectionInterface $conn) {
@@ -38,14 +41,28 @@ class WebsocketService implements MessageComponentInterface
 
     public function onMessage(ConnectionInterface $from, $msg) {
         $data = json_decode($msg, true);
-
-        if (isset($data['to']) && isset($data['message'])) {
-            $this->sendToUser($data['to'], json_encode([
-                'from' => $data['from'] ?? $from->resourceId,
-                'message' => $data['message']
+        
+        if (isset($data['to']) && isset($data['message']) && isset($data['from'])) {
+            // Store message in MongoDB
+            $fromUserId = $data['from'];
+            $toUserId = $data['to'];
+            $message = $data['message'];
+            
+            try {
+                // Save message to MongoDB
+                $this->mongoDBService->saveMessage($fromUserId, $toUserId, $message);
+                echo "Message saved to database\n";
+            } catch (\Exception $e) {
+                echo "Error saving message to database: {$e->getMessage()}\n";
+            }
+            
+            // Send message to recipient
+            $this->sendToUser($toUserId, json_encode([
+                'from' => $fromUserId,
+                'message' => $message
             ]));
         } else {
-            echo "Need 'to' and 'message' keys\n";
+            echo "Need 'to', 'message' and 'from' keys\n";
         }
     }
 
