@@ -20,8 +20,19 @@ class WebsocketService implements MessageComponentInterface
 
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
-        $this->setUserConnection($conn->resourceId, $conn);
-        echo "New connection! ({$conn->resourceId})\n";
+        
+        // Extract the user ID from the query parameters
+        $queryString = parse_url($conn->httpRequest->getUri(), PHP_URL_QUERY);
+        parse_str($queryString, $queryParams);
+        
+        // Use the provided userId or throw an exception
+        $userId = isset($queryParams['userId']) ? $queryParams['userId'] : throw new \Exception('User ID is required');
+        
+        // Store the userId in the connection object for future reference
+        $conn->userId = $userId;
+        
+        $this->setUserConnection($userId, $conn);
+        echo "New connection! (User ID: {$userId})\n";
     }
 
     public function setUserConnection($userId, ConnectionInterface $conn) {
@@ -67,11 +78,9 @@ class WebsocketService implements MessageComponentInterface
     }
 
     public function onClose(ConnectionInterface $conn) {
-        //  La connexion est fermée, retirez-la, car nous ne pouvons plus lui envoyer de messages.
         $this->clients->detach($conn);
-        unset($this->userConnections[$conn->resourceId]);
-
-        echo "Connection {$conn->resourceId} has disconnected\n";
+        unset($this->userConnections[$conn->userId]);
+        echo "Connection for user {$conn->userId} has disconnected\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
