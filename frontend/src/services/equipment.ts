@@ -1,10 +1,9 @@
 import { Equipment } from "../interfaces/Equipment.interface";
-import { DatabaseService } from "./database";
 import {API_URL_EQUIPMENT, API_URL_EQUIPMENTS} from "@/constants/api.ts";
 import {api} from "@/lib/api.ts";
 import {getToken} from "@/utils/getToken.ts";
 
-export class EquipmentService extends DatabaseService {
+export class EquipmentService {
     public async getAllEquipment(): Promise<Equipment[]> {
         const token = getToken();
         try {

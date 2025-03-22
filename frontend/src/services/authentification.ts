@@ -1,7 +1,6 @@
-import { DatabaseService } from "./database";
 import axios from 'axios';
 
-export class AuthentificationService extends DatabaseService {
+export class AuthentificationService {
 
     public async login(username: string, password: string): Promise<any> {
         try {
