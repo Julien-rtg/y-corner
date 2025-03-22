@@ -1,0 +1,12 @@
+framework:
+    serializer:
+        enabled: true
+        mapping:
+            paths: ['%kernel.project_dir%/src/Entity']
+        default_context:
+            enable_max_depth: true
+            skip_null_values: true
+
+services:
+    # App\Serializer\CircularReferenceHandler:
+    #     autowire: true
