@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AuthentificationService } from '@/services/authentification.service';
+import { AuthentificationService } from '@/services/authentification';
 
 export default function Sidebar() {
   const authService = new AuthentificationService();

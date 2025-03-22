@@ -5,7 +5,8 @@ import Register from '@/pages/auth/Register';
 import ResetPassword from '@/pages/auth/ResetPassword';
 import Dashboard from '@/pages/Dashboard';
 import { useEffect, useState } from 'react';
-import { AuthentificationService } from '@/services/authentification.service';
+import { AuthentificationService } from '@/services/authentification';
+import Equipment from "@/pages/main/equipments/equipment";
 
 function App() {
   const auth = new AuthentificationService();
@@ -43,6 +44,10 @@ function App() {
         <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
         <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/dashboard" />} />
         <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route
+          path="/equipment/:id"
+          element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />}
+        />
         <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
       </Routes>
       <Toaster richColors />

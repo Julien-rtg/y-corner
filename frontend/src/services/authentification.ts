@@ -1,4 +1,4 @@
-import { DatabaseService } from "./database.service";
+import { DatabaseService } from "./database";
 import axios from 'axios';
 
 export class AuthentificationService extends DatabaseService {
