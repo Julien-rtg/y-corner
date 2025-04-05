@@ -6,6 +6,7 @@
 parameters:
     env(MONGODB_URL): ''
     env(MONGODB_DB): ''
+    gesdinet_jwt_refresh_token.ttl: 2592000 # 30 days
 
 services:
     # default configuration for services in *this* file
@@ -24,3 +25,13 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    
+    # Custom JWT authentication success handler
+    app.jwt_authentication_success_handler:
+        class: App\Security\JwtAuthenticationSuccessHandler
+        arguments:
+            - '@lexik_jwt_authentication.jwt_manager'
+            - '@serializer'
+            - '@?gesdinet.jwtrefreshtoken.refresh_token_generator'
+            - '@?gesdinet.jwtrefreshtoken.refresh_token_manager'
+            - '%gesdinet_jwt_refresh_token.ttl%'

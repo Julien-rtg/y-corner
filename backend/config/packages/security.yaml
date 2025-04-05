@@ -16,7 +16,7 @@ security:
             entry_point: jwt
             json_login:
                 check_path: /api/login_check # or, if you have defined a route for your login path, the route name you used
-                success_handler: lexik_jwt_authentication.handler.authentication_success
+                success_handler: app.jwt_authentication_success_handler
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
             jwt: ~
             refresh_jwt:

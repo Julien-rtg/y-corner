@@ -20,17 +20,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['user_details'])]
     private array $roles = [];
 
     /**
@@ -40,30 +41,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['user_details'])]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $address = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $city = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?string $country = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['show-equipment'])]
+    #[Groups(['show-equipment', 'user_details'])]
     private ?int $postalCode = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

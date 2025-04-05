@@ -26,7 +26,7 @@ class EquipmentController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    #[Route('/api/equipment', name: 'app_equipment', methods: ['GET'])]
+    #[Route('/api/equipments', name: 'app_equipment', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): JsonResponse
     {
         $data = $entityManager->getRepository(Equipment::class)->findAll();

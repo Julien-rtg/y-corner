@@ -11,6 +11,7 @@ export class AuthentificationService {
                 .then(function (response) {
                     localStorage.setItem("token", response.data.token);
                     localStorage.setItem("refresh_token", response.data.refresh_token);
+                    localStorage.setItem("user", JSON.stringify(response.data.user));
                     return true;
                 })
         }
