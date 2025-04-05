@@ -35,7 +35,7 @@ export class AuthentificationService {
                 refresh_token: localStorage.getItem("refresh_token")
             })
                 .then(function (response) {
-                    localStorage.setItem("token", response.data.token);
+                    localStorage.setItem("refresh_token", response.data.refresh_token);
                     return true;
                 })
         }
