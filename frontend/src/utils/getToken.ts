@@ -1,3 +1,5 @@
+import { User } from "@/interfaces/User.interface";
+
 export function getToken(): string | null {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -5,4 +7,9 @@ export function getToken(): string | null {
         return null;
     }
     return token;
+}
+
+export function getUser(): User {
+    const user = localStorage.getItem('user');
+    return JSON.parse(user || '');
 }

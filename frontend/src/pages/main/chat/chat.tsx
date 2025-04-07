@@ -1,15 +1,16 @@
-import Sidebar from '@/components/ui/sidebar/Sidebar';
 import { useState, useEffect } from 'react';
 import useWebSocket, { ReadyState } from "react-use-websocket"
 
+interface ChatProps {
+    userId: number;
+    recipientId: number;
+}
 
-function Chat() {
+function Chat({ userId, recipientId }: ChatProps) {
     const [message, setMessage] = useState('');
     const [connectionStatus, setConnectionStatus] = useState('');
     const [messages, setMessages] = useState<any[]>([]);
-    const [recipient, setRecipient] = useState('2'); // Default recipient ID
-    const userId = '1';
-    const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', userId);
+    const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', userId.toString());
     
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
         WS_URL,
@@ -46,11 +47,11 @@ function Chat() {
 
     const handleSend = () => {
         if (message.trim() && readyState === ReadyState.OPEN) {
-            console.log('Sending message to user:', recipient);
+            console.log('Sending message to user:', recipientId);
             // Format the message according to your backend's expected format
             sendJsonMessage({
                 from: userId,
-                to: recipient,
+                to: recipientId,
                 message: message
             });
             
@@ -67,24 +68,11 @@ function Chat() {
 
     return (
         <div className="flex min-h-screen bg-background">
-            <Sidebar />
             <main className="flex-1 p-8">
                 <div className="mb-4">
                     <p className="text-sm font-medium">Connection Status: <span className={`font-bold ${connectionStatus === 'Open' ? 'text-green-500' : 'text-red-500'}`}>{connectionStatus}</span></p>
                     <p className="text-xs text-gray-500">WebSocket URL: {WS_URL}</p>
                 </div>
-                
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Recipient ID:</label>
-                    <input 
-                        className="w-full p-2 border rounded bg-white" 
-                        type="text" 
-                        value={recipient} 
-                        onChange={(e) => setRecipient(e.target.value)} 
-                        placeholder="Enter recipient user ID"
-                    />
-                </div>
-                
                 <div className="mb-4 p-4 border rounded bg-white h-64 overflow-y-auto">
                     {messages.length === 0 ? (
                         <p className="text-gray-400 text-center">No messages yet</p>

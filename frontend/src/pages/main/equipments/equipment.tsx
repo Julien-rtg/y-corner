@@ -1,37 +1,21 @@
 import {useEffect, useState} from "react";
 import {Heart, MapPin, Minus, Plus, RotateCcw, Shield, ShoppingCart, Star, StarHalf, Truck} from "lucide-react";
-import { getToken } from "@/utils/getToken";
+import { getToken, getUser } from "@/utils/getToken";
 import { api } from "@/lib/api";
 import { API_URL_EQUIPMENT } from "@/constants/api";
 import { useParams } from "react-router-dom";
-
-export interface Category {
-	id: number;
-	name: string;
-}
-
-export interface Image {
-	id: number;
-	url: string;
-}
-
-export interface Equipment {
-	id: number;
-	name: string;
-	categories: Category[];
-	city: string;
-	price: number;
-	image: Image[];
-}
+import Chat from "../chat/chat";
+import { Equipment as EquipmentInterface } from "@/interfaces/Equipment.interface";
+import { Category as CategoryInterface } from "@/interfaces/Category.interface";
 
 // API function
-async function getEquipment(id: string): Promise<Equipment> {
+async function getEquipment(id: string): Promise<EquipmentInterface> {
 	const token = getToken();
 
 	try {
 		const endpoint = API_URL_EQUIPMENT.replace("{id}", id);
 
-		const data = await api<Equipment>(
+		const data = await api<EquipmentInterface>(
 			endpoint,
 			{
 				method: "GET",
@@ -55,12 +39,13 @@ async function getEquipment(id: string): Promise<Equipment> {
 }
 
 function Equipment() {
-	const [equipment, setEquipment] = useState<Equipment | null>(null);
+	const [equipment, setEquipment] = useState<EquipmentInterface | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [quantity, setQuantity] = useState(1);
 	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 	const params = useParams();
+	const user = getUser();
 
 	useEffect(() => {
 		const fetchEquipment = async () => {
@@ -125,7 +110,7 @@ function Equipment() {
 						<div className="aspect-square bg-muted rounded-md flex items-center justify-center relative">
 							{equipment.image && equipment.image.length > 0 && (
 								<img
-									src={equipment.image[selectedImageIndex]?.url}
+									src={equipment.image[selectedImageIndex]?.content}
 									alt={equipment.name}
 									className="object-cover w-full h-full rounded-md"
 								/>
@@ -150,7 +135,7 @@ function Equipment() {
 										onClick={() => setSelectedImageIndex(index)}
 									>
 										<img
-											src={img.url}
+											src={img.content}
 											alt={`${equipment.name} thumbnail ${index + 1}`}
 											className={`object-cover w-full h-full rounded-md ${selectedImageIndex === index ? 'ring-2 ring-primary' : ''}`}
 										/>
@@ -179,7 +164,7 @@ function Equipment() {
 								</div>
 							</div>
 							<div className="flex flex-wrap gap-2 mt-2">
-								{equipment.categories.map(category => (
+								{equipment.categories.map((category: CategoryInterface) => (
 									<span key={category.id} className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
                     {category.name}
                   </span>
@@ -228,7 +213,12 @@ function Equipment() {
 							<button className="w-full border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md inline-flex items-center justify-center">
 								<Heart className="mr-2 h-4 w-4" /> Ajouter aux favoris
 							</button>
+							<button className="w-full border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md inline-flex items-center justify-center">
+								Chat
+							</button>
 						</div>
+
+						<Chat userId={user.id} recipientId={equipment.user.id} />
 
 						<hr className="h-px my-4 bg-border border-0" />
 
