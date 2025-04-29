@@ -1,19 +1,19 @@
 import { Equipment } from "../interfaces/Equipment.interface";
-import {API_URL_EQUIPMENT, API_URL_EQUIPMENTS} from "@/constants/api.ts";
-import {api} from "@/lib/api.ts";
-import {getToken} from "@/utils/getToken.ts";
+import { API_URL_EQUIPMENT, API_URL_EQUIPMENTS } from "@/constants/api.ts";
+import { api } from "@/lib/api.ts";
+import { getToken } from "@/utils/getToken.ts";
 
 export class EquipmentService {
     public async getAllEquipment(): Promise<Equipment[]> {
         const token = getToken();
         try {
             const data = await api<Equipment[]>(
-              API_URL_EQUIPMENTS,
-              {
-                  method: "GET",
-                  headers: { Authorization: `Bearer ${token}` },
-              },
-              process.env.VITE_API_URL || ""
+                API_URL_EQUIPMENTS,
+                {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+                import.meta.env.VITE_API_URL || ""
             );
 
             if (!data) {
@@ -37,12 +37,12 @@ export class EquipmentService {
             const endpoint = API_URL_EQUIPMENT.replace("{id}", id);
 
             const data = await api<Equipment>(
-              endpoint,
-              {
-                  method: "GET",
-                  headers: { Authorization: `Bearer ${token}` },
-              },
-              process.env.VITE_API_URL || ""
+                endpoint,
+                {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+                import.meta.env.VITE_API_URL || ""
             );
 
             if (!data) {
