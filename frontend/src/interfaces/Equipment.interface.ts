@@ -8,6 +8,6 @@ export interface Equipment {
     categories: Category[];
     city: string;
     price: number;
-    image: Image[];
+    images: Image[];
     user: User;
 }
