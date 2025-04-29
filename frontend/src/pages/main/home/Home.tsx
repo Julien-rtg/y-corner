@@ -177,7 +177,7 @@ function Home() {
                         {item.city}
                       </p>
                       <p className="text-muted-foreground text-sm mb-4">
-                        Posted by: {item.user.firstName} {item.user.lastName}
+                        Publié par: {item.user.firstName} {item.user.lastName}
                       </p>
                       <p className="text-2xl font-bold">
                         ${item.price.toFixed(2)}
