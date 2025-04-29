@@ -10,4 +10,5 @@ export interface Equipment {
     price: number;
     images: Image[];
     user: User;
+    description: string;
 }

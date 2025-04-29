@@ -180,7 +180,7 @@ function Home() {
                         Publié par: {item.user.firstName} {item.user.lastName}
                       </p>
                       <p className="text-2xl font-bold">
-                        ${item.price.toFixed(2)}
+                        {item.price.toFixed(2)} €
                       </p>
                     </CardContent>
                     <CardFooter className="p-6 pt-0">
