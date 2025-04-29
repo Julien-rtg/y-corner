@@ -1,94 +1,57 @@
-import { LogOut, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { AuthentificationService } from '@/services/authentification';
+import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const authService = new AuthentificationService();
+  
   const handleLogout = () => {
     authService.logout();
   };
 
+  const navItems = [
+    { name: 'Accueil', icon: Home, path: '/' },
+    { name: 'Mon profil', icon: User, path: '/profile' },
+    { name: 'Mes messages', icon: MessageCircle, path: '/messages' },
+    { name: 'Mes équipements', icon: Package, path: '/my-equipments' },
+    { name: 'Wishlist', icon: Heart, path: '/wishlist' },
+    { name: 'Ajouter équipement', icon: PlusCircle, path: '/add-equipment' },
+    { name: 'Contact', icon: MailOpen, path: '/contact' },
+  ];
+
   return (
     <div className="w-80 h-screen bg-card border-r p-6 flex flex-col">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-lg font-semibold">Filters</h2>
+        <h2 className="text-lg font-semibold">YCorner</h2>
       </div>
 
-      <div className="space-y-6">
-        {/* Search Filter */}
-        <div className="space-y-2">
-          <Label>Search</Label>
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." className="pl-8" />
-          </div>
-        </div>
+      <nav className="flex-1">
+        <ul className="space-y-2">
+          {navItems.map((item) => (
+            <li key={item.name}>
+              <Button
+                variant="outline"
+                className={cn(
+                  'w-full justify-start',
+                  location.pathname === item.path ? 'bg-accent' : ''
+                )}
+                onClick={() => navigate(item.path)}
+              >
+                <item.icon className="mr-2 h-4 w-4" />
+                {item.name}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-        {/* Category Filter */}
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="clothing">Clothing</SelectItem>
-              <SelectItem value="books">Books</SelectItem>
-              <SelectItem value="home">Home & Garden</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Price Range Filter */}
-        <div className="space-y-4">
-          <Label>Price Range</Label>
-          <Slider
-            defaultValue={[0, 1000]}
-            max={1000}
-            step={10}
-            className="mt-2"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>$0</span>
-            <span>$1000</span>
-          </div>
-        </div>
-
-        {/* Location Filter */}
-        <div className="space-y-2">
-          <Label>Location</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              <SelectItem value="north">North Region</SelectItem>
-              <SelectItem value="south">South Region</SelectItem>
-              <SelectItem value="east">East Region</SelectItem>
-              <SelectItem value="west">West Region</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Apply Filters Button */}
-        <Button className="w-full mt-4">
-          Apply Filters
-        </Button>
-
-        <Button  onClick={handleLogout}>
+      <div className="pt-6 mt-6 border-t">
+        <Button variant="outline" className="w-full justify-start text-red-500" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
           Déconnexion
         </Button>
       </div>
