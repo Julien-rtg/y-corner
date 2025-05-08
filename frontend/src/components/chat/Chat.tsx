@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useWebSocket, { ReadyState } from "react-use-websocket"
 
-interface ChatProps {
+export interface ChatProps {
     userId: number;
     recipientId: number;
 }
@@ -67,44 +67,41 @@ function Chat({ userId, recipientId }: ChatProps) {
     };
 
     return (
-        <div className="flex min-h-screen bg-background">
-            <main className="flex-1 p-8">
-                <div className="mb-4">
-                    <p className="text-sm font-medium">Connection Status: <span className={`font-bold ${connectionStatus === 'Open' ? 'text-green-500' : 'text-red-500'}`}>{connectionStatus}</span></p>
-                    <p className="text-xs text-gray-500">WebSocket URL: {WS_URL}</p>
-                </div>
-                <div className="mb-4 p-4 border rounded bg-white h-64 overflow-y-auto">
-                    {messages.length === 0 ? (
-                        <p className="text-gray-400 text-center">No messages yet</p>
-                    ) : (
-                        messages.map((msg, index) => (
-                            <div key={index} className={`mb-2 p-2 rounded ${msg.sent || msg.from === userId ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
-                                <p className="text-xs text-gray-500">{msg.from === userId ? 'You' : `User ${msg.from}`}</p>
-                                <p className="text-sm">{msg.message}</p>
-                            </div>
-                        ))
-                    )}
-                </div>
-                
-                <div className="flex space-x-2">
-                    <input 
-                        className="flex-1 p-2 border rounded bg-white" 
-                        type="text" 
-                        value={message} 
-                        onChange={(e) => setMessage(e.target.value)} 
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Type a message..."
-                        disabled={readyState !== ReadyState.OPEN}
-                    />
-                    <button 
-                        className={`px-4 py-2 rounded transition-colors ${readyState === ReadyState.OPEN ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`} 
-                        onClick={handleSend}
-                        disabled={readyState !== ReadyState.OPEN}
-                    >
-                        Send
-                    </button>
-                </div>
-            </main>
+        <div className="flex flex-col h-full">
+            <div className="mb-2">
+                <p className="text-xs font-medium">Status: <span className={`font-bold ${connectionStatus === 'Open' ? 'text-green-500' : 'text-red-500'}`}>{connectionStatus}</span></p>
+            </div>
+            <div className="flex-1 mb-3 p-3 border rounded bg-white overflow-y-auto">
+                {messages.length === 0 ? (
+                    <p className="text-gray-400 text-center">Aucun message</p>
+                ) : (
+                    messages.map((msg, index) => (
+                        <div key={index} className={`mb-2 p-2 rounded ${msg.sent || msg.from === userId ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
+                            <p className="text-xs text-gray-500">{msg.from === userId ? 'Vous' : `Utilisateur ${msg.from}`}</p>
+                            <p className="text-sm">{msg.message}</p>
+                        </div>
+                    ))
+                )}
+            </div>
+            
+            <div className="flex space-x-2">
+                <input 
+                    className="flex-1 p-2 border rounded bg-white" 
+                    type="text" 
+                    value={message} 
+                    onChange={(e) => setMessage(e.target.value)} 
+                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    placeholder="Écrivez un message..."
+                    disabled={readyState !== ReadyState.OPEN}
+                />
+                <button 
+                    className={`px-3 py-2 rounded transition-colors ${readyState === ReadyState.OPEN ? 'bg-primary text-white hover:bg-primary/90' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`} 
+                    onClick={handleSend}
+                    disabled={readyState !== ReadyState.OPEN}
+                >
+                    Envoyer
+                </button>
+            </div>
         </div>
     );
 }
