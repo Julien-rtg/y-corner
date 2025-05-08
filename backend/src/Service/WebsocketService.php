@@ -21,14 +21,11 @@ class WebsocketService implements MessageComponentInterface
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
         
-        // Extract the user ID from the query parameters
         $queryString = parse_url($conn->httpRequest->getUri(), PHP_URL_QUERY);
         parse_str($queryString, $queryParams);
         
-        // Use the provided userId or throw an exception
         $userId = isset($queryParams['userId']) ? $queryParams['userId'] : throw new \Exception('User ID is required');
         
-        // Store the userId in the connection object for future reference
         $conn->userId = $userId;
         
         $this->setUserConnection($userId, $conn);
@@ -54,20 +51,17 @@ class WebsocketService implements MessageComponentInterface
         $data = json_decode($msg, true);
         
         if (isset($data['to']) && isset($data['message']) && isset($data['from'])) {
-            // Store message in MongoDB
             $fromUserId = $data['from'];
             $toUserId = $data['to'];
             $message = $data['message'];
             
             try {
-                // Save message to MongoDB
                 $this->mongoDBService->saveMessage($fromUserId, $toUserId, $message);
                 echo "Message saved to database\n";
             } catch (\Exception $e) {
                 echo "Error saving message to database: {$e->getMessage()}\n";
             }
             
-            // Send message to recipient
             $this->sendToUser($toUserId, json_encode([
                 'from' => $fromUserId,
                 'message' => $message

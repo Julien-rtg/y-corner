@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, User, Clock } from 'lucide-react';
 import Chat from '@/components/chat/Chat';
 import { Button } from '@/components/ui/button';
-import { getUser } from '@/utils/getToken';
+import { getToken, getUser } from '@/utils/getToken';
+import { api } from '@/lib/api';
 
-// Define interfaces for our data structures
 interface Conversation {
     id: number;
     recipientId: number;
@@ -36,41 +36,12 @@ function ChatPage() {
             
             try {
                 setLoading(true);
-                // This is a placeholder - you would need to implement the actual API endpoint
-                // const data = await api(`/api/conversations`, {
-                //     method: 'GET',
-                //     headers: { Authorization: `Bearer ${getToken()}` },
-                // }, import.meta.env.VITE_API_URL || '');
+                const data = await api(`/api/chat/conversations?userId=${user.id}`, {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                }, import.meta.env.VITE_API_URL || '');
                 
-                // For now, we'll use mock data
-                const mockData: Conversation[] = [
-                    {
-                        id: 1,
-                        recipientId: 2,
-                        recipientName: 'Jean Dupont',
-                        lastMessage: 'Bonjour, est-ce que ce produit est toujours disponible ?',
-                        lastMessageDate: '2025-05-08T10:30:00',
-                        unreadCount: 2
-                    },
-                    {
-                        id: 2,
-                        recipientId: 3,
-                        recipientName: 'Marie Martin',
-                        lastMessage: 'Merci pour votre réponse !',
-                        lastMessageDate: '2025-05-07T15:45:00',
-                        unreadCount: 0
-                    },
-                    {
-                        id: 3,
-                        recipientId: 4,
-                        recipientName: 'Pierre Durand',
-                        lastMessage: 'Pouvez-vous faire une réduction sur le prix ?',
-                        lastMessageDate: '2025-05-06T09:15:00',
-                        unreadCount: 1
-                    }
-                ];
-                
-                setConversations(mockData);
+                setConversations(data as Conversation[]);
                 setLoading(false);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -85,7 +56,6 @@ function ChatPage() {
         navigate(-1);
     };
 
-    // Format date to a readable format
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('fr-FR', { 
@@ -96,7 +66,6 @@ function ChatPage() {
         }).format(date);
     };
 
-    // Handle selecting a conversation
     const selectConversation = (id: number) => {
         navigate(`/chat/${id}`);
     };
@@ -131,7 +100,6 @@ function ChatPage() {
         );
     }
 
-    // If a recipient is selected, show the chat view
     if (recipientId) {
         const conversation = conversations.find(c => c.recipientId === recipientId);
         const recipientName = conversation ? conversation.recipientName : `Utilisateur #${recipientId}`;
@@ -168,7 +136,6 @@ function ChatPage() {
         );
     }
 
-    // Otherwise, show the list of conversations
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">

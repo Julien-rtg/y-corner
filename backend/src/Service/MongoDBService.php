@@ -45,4 +45,14 @@ class MongoDBService
             ->execute()
             ->toArray();
     }
+
+    public function getConversations(string $userId): array
+    {
+        return $this->documentManager->createQueryBuilder(ChatMessage::class)
+            ->field('fromUserId')->equals($userId)
+            ->sort('createdAt', 'desc')
+            ->getQuery()
+            ->execute()
+            ->toArray();
+    }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import useWebSocket, { ReadyState } from "react-use-websocket"
+import useWebSocket, { ReadyState } from "react-use-websocket";
+import chatService, { ChatMessage } from '@/services/chat';
 
 export interface ChatProps {
     userId: number;
@@ -9,7 +10,9 @@ export interface ChatProps {
 function Chat({ userId, recipientId }: ChatProps) {
     const [message, setMessage] = useState('');
     const [connectionStatus, setConnectionStatus] = useState('');
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<(ChatMessage | any)[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', userId.toString());
     
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
@@ -23,7 +26,6 @@ function Chat({ userId, recipientId }: ChatProps) {
         },
     )
 
-    // Run when the connection state (readyState) changes
     useEffect(() => {
         const connectionStatusMap = {
             [ReadyState.CONNECTING]: 'Connecting',
@@ -34,35 +36,46 @@ function Chat({ userId, recipientId }: ChatProps) {
         };
         
         setConnectionStatus(connectionStatusMap[readyState]);
-        console.log("Connection state changed to:", connectionStatusMap[readyState]);
     }, [readyState])
 
-    // Run when a new WebSocket message is received (lastJsonMessage)
+    useEffect(() => {
+        const fetchMessages = async () => {
+            try {
+                setLoading(true);
+                const fetchedMessages = await chatService.getMessagesBetweenUsers(userId, recipientId);
+                setMessages(fetchedMessages);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching messages:', err);
+                setError('Impossible de charger les messages précédents');
+                setLoading(false);
+            }
+        };
+        
+        fetchMessages();
+    }, [userId, recipientId]);
+
     useEffect(() => {
         if (lastJsonMessage) {
-            console.log('Received message:', lastJsonMessage);
             setMessages(prev => [...prev, lastJsonMessage]);
         }
     }, [lastJsonMessage])
 
     const handleSend = () => {
         if (message.trim() && readyState === ReadyState.OPEN) {
-            console.log('Sending message to user:', recipientId);
-            // Format the message according to your backend's expected format
             sendJsonMessage({
                 from: userId,
                 to: recipientId,
                 message: message
             });
             
-            // Add the sent message to our local messages list
             setMessages(prev => [...prev, {
                 from: userId,
                 message: message,
                 sent: true
             }]);
             
-            setMessage(''); // Clear input after sending
+            setMessage('');
         }
     };
 
@@ -72,15 +85,43 @@ function Chat({ userId, recipientId }: ChatProps) {
                 <p className="text-xs font-medium">Status: <span className={`font-bold ${connectionStatus === 'Open' ? 'text-green-500' : 'text-red-500'}`}>{connectionStatus}</span></p>
             </div>
             <div className="flex-1 mb-3 p-3 border rounded bg-white overflow-y-auto">
-                {messages.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center h-full">
+                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                ) : error ? (
+                    <p className="text-destructive text-center">{error}</p>
+                ) : messages.length === 0 ? (
                     <p className="text-gray-400 text-center">Aucun message</p>
                 ) : (
-                    messages.map((msg, index) => (
-                        <div key={index} className={`mb-2 p-2 rounded ${msg.sent || msg.from === userId ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
-                            <p className="text-xs text-gray-500">{msg.from === userId ? 'Vous' : `Utilisateur ${msg.from}`}</p>
-                            <p className="text-sm">{msg.message}</p>
-                        </div>
-                    ))
+                    messages.map((msg, index) => {
+                        // For messages from MongoDB (API)
+                        let isFromCurrentUser = false;
+                        let messageText = '';
+                        let sender = '';
+                        
+                        if (msg.fromUserId !== undefined) {
+                            // This is a message from the MongoDB API
+                            isFromCurrentUser = parseInt(msg.fromUserId) === userId;
+                            messageText = msg.message;
+                            sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.fromUserId}`;
+                        } else {
+                            // This is a WebSocket message or locally added message
+                            isFromCurrentUser = msg.from === userId || msg.sent === true;
+                            messageText = msg.message;
+                            sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.from}`;
+                        }
+                        
+                        return (
+                            <div key={index} className={`mb-2 p-2 rounded ${isFromCurrentUser ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
+                                <p className="text-xs text-gray-500">{sender}</p>
+                                <p className="text-sm">{messageText}</p>
+                                {msg.createdAt && (
+                                    <p className="text-xs text-gray-400 text-right mt-1">{new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                                )}
+                            </div>
+                        );
+                    })
                 )}
             </div>
             

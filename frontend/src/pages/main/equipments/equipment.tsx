@@ -9,6 +9,7 @@ import { Equipment as EquipmentInterface } from "@/interfaces/Equipment.interfac
 import { Category as CategoryInterface } from "@/interfaces/Category.interface";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getUser } from "@/utils/getToken";
 
 async function getEquipment(id: string): Promise<EquipmentInterface> {
 	const token = getToken();
@@ -46,6 +47,7 @@ function Equipment() {
 	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 	const [isFloatingChatOpen, setIsFloatingChatOpen] = useState(false);
 	const params = useParams();
+	const user = getUser();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -114,7 +116,6 @@ function Equipment() {
 				</Button>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-					{/* Galerie d'images */}
 					<div className="space-y-6">
 						<div className="aspect-square bg-muted rounded-lg flex items-center justify-center overflow-hidden shadow-sm border max-h-[400px] mx-auto relative">
 							{equipment.images && equipment.images.length > 0 ? (
@@ -242,9 +243,6 @@ function Equipment() {
 				</div>
 			</div>
 
-
-
-			{/* Floating chat button and popup */}
 			<div className="fixed bottom-6 right-6 z-40">
 				{!isFloatingChatOpen ? (
 					<Button
@@ -276,7 +274,7 @@ function Equipment() {
 							</Button>
 						</div>
 						<div className="flex-1 overflow-auto p-3 bg-card">
-							<Chat userId={equipment.user.id} recipientId={equipment.user.id} />
+							<Chat userId={user.id} recipientId={equipment.user.id} />
 						</div>
 					</div>
 				)}
