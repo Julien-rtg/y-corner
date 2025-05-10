@@ -9,7 +9,6 @@ export interface ChatProps {
 
 function Chat({ userId, recipientId }: ChatProps) {
     const [message, setMessage] = useState('');
-    const [connectionStatus, setConnectionStatus] = useState('');
     const [messages, setMessages] = useState<(ChatMessage | any)[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -25,18 +24,6 @@ function Chat({ userId, recipientId }: ChatProps) {
             onError: (error) => console.error('WebSocket error:', error),
         },
     )
-
-    useEffect(() => {
-        const connectionStatusMap = {
-            [ReadyState.CONNECTING]: 'Connecting',
-            [ReadyState.OPEN]: 'Open',
-            [ReadyState.CLOSING]: 'Closing',
-            [ReadyState.CLOSED]: 'Closed',
-            [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-        };
-        
-        setConnectionStatus(connectionStatusMap[readyState]);
-    }, [readyState])
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -81,9 +68,6 @@ function Chat({ userId, recipientId }: ChatProps) {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="mb-2">
-                <p className="text-xs font-medium">Status: <span className={`font-bold ${connectionStatus === 'Open' ? 'text-green-500' : 'text-red-500'}`}>{connectionStatus}</span></p>
-            </div>
             <div className="flex-1 mb-3 p-3 border rounded bg-white overflow-y-auto">
                 {loading ? (
                     <div className="flex justify-center items-center h-full">
