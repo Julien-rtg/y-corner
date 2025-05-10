@@ -45,7 +45,7 @@ function App() {
         <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
         <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/" />} />
         <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/chat" element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />} />
+        <Route path="/messages" element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />} />
         <Route
           path="/equipment/:id"
           element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />}

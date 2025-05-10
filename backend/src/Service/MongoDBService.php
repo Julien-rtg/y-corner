@@ -48,11 +48,46 @@ class MongoDBService
 
     public function getConversations(string $userId): array
     {
-        return $this->documentManager->createQueryBuilder(ChatMessage::class)
-            ->field('fromUserId')->equals($userId)
-            ->sort('createdAt', 'desc')
+        $messages = $this->documentManager->createQueryBuilder(ChatMessage::class)
+            ->addOr(
+                $this->documentManager->createQueryBuilder(ChatMessage::class)
+                    ->field('fromUserId')->equals($userId)
+                    ->getQueryArray(),
+                $this->documentManager->createQueryBuilder(ChatMessage::class)
+                    ->field('toUserId')->equals($userId)
+                    ->getQueryArray(),
+            )
+            ->sort('createdAt', 'asc')
             ->getQuery()
             ->execute()
             ->toArray();
+            
+        $conversations = [];
+        foreach ($messages as $message) {
+            $partnerId = ($message->getFromUserId() === $userId) 
+                ? $message->getToUserId() 
+                : $message->getFromUserId();
+                
+            if (!isset($conversations[$partnerId])) {
+                $conversations[$partnerId] = [
+                    'id' => $message->getId(),
+                    'recipientId' => $partnerId,
+                    'messages' => [],
+                    'lastMessageDate' => $message->getCreatedAt(),
+                ];
+            }
+            
+            $conversations[$partnerId]['messages'][] = $message;
+            
+            if ($message->getCreatedAt() > $conversations[$partnerId]['lastMessageDate']) {
+                $conversations[$partnerId]['lastMessageDate'] = $message->getCreatedAt();
+            }
+        }
+        
+        usort($conversations, function($a, $b) {
+            return $b['lastMessageDate'] <=> $a['lastMessageDate'];
+        });
+        
+        return array_values($conversations);
     }
 }

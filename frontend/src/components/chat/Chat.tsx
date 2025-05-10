@@ -95,18 +95,15 @@ function Chat({ userId, recipientId }: ChatProps) {
                     <p className="text-gray-400 text-center">Aucun message</p>
                 ) : (
                     messages.map((msg, index) => {
-                        // For messages from MongoDB (API)
                         let isFromCurrentUser = false;
                         let messageText = '';
                         let sender = '';
                         
                         if (msg.fromUserId !== undefined) {
-                            // This is a message from the MongoDB API
                             isFromCurrentUser = parseInt(msg.fromUserId) === userId;
                             messageText = msg.message;
                             sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.fromUserId}`;
                         } else {
-                            // This is a WebSocket message or locally added message
                             isFromCurrentUser = msg.from === userId || msg.sent === true;
                             messageText = msg.message;
                             sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.from}`;

@@ -42,7 +42,6 @@ class WebsocketService implements MessageComponentInterface
             $this->userConnections[$userId]->send($message);
             return true;
         } else {
-            echo "There is no user with ID {$userId}\n";
             return false;
         }
     }
