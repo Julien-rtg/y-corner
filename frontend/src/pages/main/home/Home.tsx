@@ -185,7 +185,7 @@ function Home() {
                     </CardContent>
                     <CardFooter className="p-6 pt-0">
                       <Button className="w-full" size="lg">
-                        Contacter le vendeur
+                        Voir l'équipement
                       </Button>
                     </CardFooter>
                   </Card>

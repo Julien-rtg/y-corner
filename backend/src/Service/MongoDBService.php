@@ -19,7 +19,8 @@ class MongoDBService
         $chatMessage = new ChatMessage();
         $chatMessage->setFromUserId($fromUserId)
             ->setToUserId($toUserId)
-            ->setMessage($message);
+            ->setMessage($message)
+            ->setSeen(false);
 
         $this->documentManager->persist($chatMessage);
         $this->documentManager->flush();
@@ -46,6 +47,41 @@ class MongoDBService
             ->toArray();
     }
 
+    public function markMessagesAsSeen(string $toUserId, string $fromUserId): void
+    {
+        $qb = $this->documentManager->createQueryBuilder(ChatMessage::class)
+            ->field('fromUserId')->equals($fromUserId)
+            ->field('toUserId')->equals($toUserId)
+            ->field('seen')->equals(false)
+            ->updateMany()
+            ->field('seen')->set(true);
+            
+        $qb->getQuery()->execute();
+        $this->documentManager->flush();
+    }
+    
+    public function getUnreadMessageCount(string $userId): array
+    {
+        $result = [];
+        
+        $unreadMessages = $this->documentManager->createQueryBuilder(ChatMessage::class)
+            ->field('toUserId')->equals($userId)
+            ->field('seen')->equals(false)
+            ->getQuery()
+            ->execute()
+            ->toArray();
+            
+        foreach ($unreadMessages as $message) {
+            $fromUserId = $message->getFromUserId();
+            if (!isset($result[$fromUserId])) {
+                $result[$fromUserId] = 0;
+            }
+            $result[$fromUserId]++;
+        }
+        
+        return $result;
+    }
+    
     public function getConversations(string $userId): array
     {
         $messages = $this->documentManager->createQueryBuilder(ChatMessage::class)

@@ -7,6 +7,7 @@ export interface ChatMessage {
   toUserId: number;
   message: string;
   createdAt: string;
+  seen: boolean;
 }
 
 export interface Conversation {
@@ -20,9 +21,26 @@ export interface Conversation {
 
 export class ChatService {
   private apiUrl: string;
+  private socket: WebSocket | null = null;
 
   constructor() {
     this.apiUrl = import.meta.env.VITE_API_URL || '';
+  }
+  
+  setWebSocket(socket: WebSocket) {
+    this.socket = socket;
+  }
+  
+  markMessagesAsSeen(fromUserId: number, toUserId: number) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({
+        type: 'mark_seen',
+        from: fromUserId,
+        to: toUserId
+      }));
+      return true;
+    }
+    return false;
   }
 
   async getMessagesBetweenUsers(userId: number, recipientId: number): Promise<ChatMessage[]> {

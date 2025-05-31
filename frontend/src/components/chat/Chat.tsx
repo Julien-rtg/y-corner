@@ -1,6 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import chatService, { ChatMessage } from '@/services/chat';
+import { Check, CheckCheck } from 'lucide-react';
+
+interface WebSocketNewMessage {
+  type: 'new_message';
+  from: number;
+  message: string;
+  id: string;
+  createdAt: string;
+}
+
+interface WebSocketMessageSeen {
+  type: 'messages_seen';
+  by: string;
+}
+
+type WebSocketMessage = WebSocketNewMessage | WebSocketMessageSeen;
 
 export interface ChatProps {
     userId: number;
@@ -14,39 +30,84 @@ function Chat({ userId, recipientId }: ChatProps) {
     const [error, setError] = useState<string | null>(null);
     const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', userId.toString());
     
-    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
+    const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = useWebSocket(
         WS_URL,
         {
             share: false,
             shouldReconnect: () => true,
-            onOpen: () => console.log('WebSocket connection established'),
+            onOpen: () => {
+                console.log('WebSocket connection established');
+                chatService.setWebSocket(getWebSocket() as WebSocket);
+            },
             onClose: (event) => console.log('WebSocket connection closed', event),
             onError: (error) => console.error('WebSocket error:', error),
         },
     )
 
-    useEffect(() => {
-        const fetchMessages = async () => {
-            try {
-                setLoading(true);
-                const fetchedMessages = await chatService.getMessagesBetweenUsers(userId, recipientId);
-                setMessages(fetchedMessages);
-                setLoading(false);
-            } catch (err) {
-                console.error('Error fetching messages:', err);
-                setError('Impossible de charger les messages précédents');
-                setLoading(false);
+    const fetchMessages = async (markAsSeen = true) => {
+        try {
+            const fetchedMessages = await chatService.getMessagesBetweenUsers(userId, recipientId);
+            setMessages(fetchedMessages);
+            
+            if (markAsSeen && readyState === ReadyState.OPEN) {
+                chatService.markMessagesAsSeen(userId, recipientId);
             }
-        };
-        
+        } catch (err) {
+            console.error('Error fetching messages:', err);
+            setError('Impossible de charger les messages précédents');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        setLoading(true);
         fetchMessages();
-    }, [userId, recipientId]);
 
+        const statusRefreshInterval = setInterval(() => {
+            if (readyState === ReadyState.OPEN) {
+                fetchMessages(false);
+            }
+        }, 5000);
+        
+        return () => clearInterval(statusRefreshInterval);
+    }, [userId, recipientId, readyState]);
+    
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+    
     useEffect(() => {
         if (lastJsonMessage) {
-            setMessages(prev => [...prev, lastJsonMessage]);
+            const wsMessage = lastJsonMessage as WebSocketMessage;
+            
+            if (wsMessage.type === 'new_message') {
+                setMessages(prev => [...prev, {
+                    id: wsMessage.id,
+                    fromUserId: wsMessage.from,
+                    toUserId: userId,
+                    message: wsMessage.message,
+                    createdAt: wsMessage.createdAt,
+                    seen: false
+                }]);
+                
+                chatService.markMessagesAsSeen(userId, wsMessage.from);
+            } else if (wsMessage.type === 'messages_seen') {
+                setMessages(prev => prev.map(msg => {
+                    if (msg.fromUserId === userId && msg.toUserId === parseInt(wsMessage.by)) {
+                        return { ...msg, seen: true };
+                    }
+                    return msg;
+                }));
+            }
         }
-    }, [lastJsonMessage])
+    }, [lastJsonMessage, userId]);
+    
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSend = () => {
         if (message.trim() && readyState === ReadyState.OPEN) {
@@ -78,31 +139,45 @@ function Chat({ userId, recipientId }: ChatProps) {
                 ) : messages.length === 0 ? (
                     <p className="text-gray-400 text-center">Aucun message</p>
                 ) : (
-                    messages.map((msg, index) => {
-                        let isFromCurrentUser = false;
-                        let messageText = '';
-                        let sender = '';
-                        
-                        if (msg.fromUserId !== undefined) {
-                            isFromCurrentUser = parseInt(msg.fromUserId) === userId;
-                            messageText = msg.message;
-                            sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.fromUserId}`;
-                        } else {
-                            isFromCurrentUser = msg.from === userId || msg.sent === true;
-                            messageText = msg.message;
-                            sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.from}`;
-                        }
-                        
-                        return (
-                            <div key={index} className={`mb-2 p-2 rounded ${isFromCurrentUser ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
-                                <p className="text-xs text-gray-500">{sender}</p>
-                                <p className="text-sm">{messageText}</p>
-                                {msg.createdAt && (
-                                    <p className="text-xs text-gray-400 text-right mt-1">{new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
-                                )}
-                            </div>
-                        );
-                    })
+                    <>
+                        {messages.map((msg, index) => {
+                            let isFromCurrentUser = false;
+                            let messageText = '';
+                            let sender = '';
+                            
+                            if (msg.fromUserId !== undefined) {
+                                isFromCurrentUser = parseInt(msg.fromUserId) === userId;
+                                messageText = msg.message;
+                                sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.fromUserId}`;
+                            } else {
+                                isFromCurrentUser = msg.from === userId || msg.sent === true;
+                                messageText = msg.message;
+                                sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.from}`;
+                            }
+                            
+                            return (
+                                <div key={index} className={`mb-2 p-2 rounded ${isFromCurrentUser ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'}`}>
+                                    <p className="text-xs text-gray-500">{sender}</p>
+                                    <p className="text-sm">{messageText}</p>
+                                    <div className="flex justify-end items-center gap-1 mt-1">
+                                        {isFromCurrentUser && (
+                                            <span className="text-xs text-gray-500">
+                                                {msg.seen ? (
+                                                    <CheckCheck className="h-3 w-3 text-blue-500" />
+                                                ) : (
+                                                    <Check className="h-3 w-3" />
+                                                )}
+                                            </span>
+                                        )}
+                                        {msg.createdAt && (
+                                            <p className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div ref={messagesEndRef} />
+                    </>
                 )}
             </div>
             
