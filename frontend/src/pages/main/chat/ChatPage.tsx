@@ -21,7 +21,7 @@ interface Conversation {
     lastMessageDate: string;
 }
 
-function ChatPage() {
+function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     const navigate = useNavigate();
     const user = getUser();
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -170,6 +170,9 @@ function ChatPage() {
                                             <Chat 
                                                 userId={user.id} 
                                                 recipientId={parseInt(selectedConversation.recipientId)} 
+                                                sendJsonMessage={sendJsonMessage}
+                                                lastJsonMessage={lastJsonMessage}
+                                                readyState={readyState}
                                             />
                                         )}
                                     </div>

@@ -40,7 +40,7 @@ async function getEquipment(id: string): Promise<EquipmentInterface> {
 	}
 }
 
-function Equipment() {
+function Equipment({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 	const [equipment, setEquipment] = useState<EquipmentInterface | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -274,7 +274,7 @@ function Equipment() {
 							</Button>
 						</div>
 						<div className="flex-1 overflow-auto p-3 bg-card">
-							<Chat userId={user.id} recipientId={equipment.user.id} />
+							<Chat userId={user.id} recipientId={equipment.user.id} sendJsonMessage={sendJsonMessage} lastJsonMessage={lastJsonMessage} readyState={readyState} />
 						</div>
 					</div>
 				)}

@@ -21,28 +21,16 @@ type WebSocketMessage = WebSocketNewMessage | WebSocketMessageSeen;
 export interface ChatProps {
     userId: number;
     recipientId: number;
+    sendJsonMessage: (message: any) => void;
+    lastJsonMessage: any;
+    readyState: ReadyState;
 }
 
-function Chat({ userId, recipientId }: ChatProps) {
+function Chat({ userId, recipientId, sendJsonMessage, lastJsonMessage, readyState }: ChatProps) {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<(ChatMessage | any)[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', userId.toString());
-    
-    const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = useWebSocket(
-        WS_URL,
-        {
-            share: false,
-            shouldReconnect: () => true,
-            onOpen: () => {
-                console.log('WebSocket connection established');
-                chatService.setWebSocket(getWebSocket() as WebSocket);
-            },
-            onClose: (event) => console.log('WebSocket connection closed', event),
-            onError: (error) => console.error('WebSocket error:', error),
-        },
-    )
 
     const fetchMessages = async (markAsSeen = true) => {
         try {
