@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MapPin, MessageCircle } from "lucide-react";
-import { getToken, getUser } from "@/utils/getToken";
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MapPin, MessageCircle, X } from "lucide-react";
+import { getToken } from "@/utils/getToken";
 import { api } from "@/lib/api";
 import { API_URL_EQUIPMENT } from "@/constants/api";
 import { useParams, useNavigate } from "react-router-dom";
-import Chat from "../chat/chat";
+import Chat from "@/components/chat/Chat";
 import { Equipment as EquipmentInterface } from "@/interfaces/Equipment.interface";
 import { Category as CategoryInterface } from "@/interfaces/Category.interface";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getUser } from "@/utils/getToken";
 
-// API function
 async function getEquipment(id: string): Promise<EquipmentInterface> {
 	const token = getToken();
 
@@ -40,15 +40,15 @@ async function getEquipment(id: string): Promise<EquipmentInterface> {
 	}
 }
 
-function Equipment() {
+function Equipment({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 	const [equipment, setEquipment] = useState<EquipmentInterface | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-	const [isShowingChat, setIsShowingChat] = useState(false);
+	const [isFloatingChatOpen, setIsFloatingChatOpen] = useState(false);
 	const params = useParams();
-	const navigate = useNavigate();
 	const user = getUser();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchEquipment = async () => {
@@ -67,7 +67,7 @@ function Equipment() {
 	}, [params.id]);
 
 	const toggleChat = () => {
-		setIsShowingChat(prev => !prev);
+		setIsFloatingChatOpen(prev => !prev);
 	};
 
 	const handleGoBack = () => {
@@ -116,7 +116,6 @@ function Equipment() {
 				</Button>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-					{/* Galerie d'images */}
 					<div className="space-y-6">
 						<div className="aspect-square bg-muted rounded-lg flex items-center justify-center overflow-hidden shadow-sm border max-h-[400px] mx-auto relative">
 							{equipment.images && equipment.images.length > 0 ? (
@@ -189,7 +188,6 @@ function Equipment() {
 						)}
 					</div>
 
-					{/* Détails du produit */}
 					<div className="space-y-8">
 						<div className="space-y-4">
 							<h1 className="text-3xl font-bold tracking-tight">{equipment.name}</h1>
@@ -245,33 +243,42 @@ function Equipment() {
 				</div>
 			</div>
 
-			{isShowingChat && (
-				<div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-					<div
-						className="bg-card shadow-xl rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col border animate-in slide-in-from-bottom-10 duration-300"
+			<div className="fixed bottom-6 right-6 z-40">
+				{!isFloatingChatOpen ? (
+					<Button
+						variant="default"
+						size="icon"
+						className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all bg-primary hover:bg-primary/90"
+						onClick={toggleChat}
+					>
+						<MessageCircle className="h-6 w-6" />
+						<span className="sr-only">Ouvrir le chat</span>
+					</Button>
+				) : (
+					<div 
+						className="bg-card shadow-xl rounded-t-xl w-[350px] h-[450px] overflow-hidden flex flex-col border animate-in slide-in-from-bottom duration-300"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<div className="flex items-center justify-between p-4 border-b bg-muted/50">
-							<div className="flex items-center space-x-3">
-								<div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-									<MessageCircle className="h-5 w-5" />
+						<div className="flex items-center justify-between p-3 border-b bg-muted/50">
+							<div className="flex items-center space-x-2">
+								<div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+									<MessageCircle className="h-4 w-4" />
 								</div>
 								<div>
-									<h2 className="font-semibold">Conversation avec {equipment.user.firstName} {equipment.user.lastName}</h2>
-									<p className="text-xs text-muted-foreground">Au sujet de : {equipment.name}</p>
+									<h2 className="font-semibold text-sm">Chat avec {equipment.user.firstName}</h2>
+									<p className="text-xs text-muted-foreground truncate max-w-[200px]">Au sujet de : {equipment.name}</p>
 								</div>
 							</div>
-							<Button variant="ghost" size="icon" onClick={toggleChat} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
-								<span className="sr-only">Fermer</span>
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+							<Button variant="outline" size="icon" onClick={toggleChat} className="rounded-full h-8 w-8 p-0">
+								<X className="h-4 w-4" />
 							</Button>
 						</div>
-						<div className="flex-1 overflow-auto p-4 bg-card">
-							<Chat userId={equipment.user.id} recipientId={equipment.user.id} />
+						<div className="flex-1 overflow-auto p-3 bg-card">
+							<Chat userId={user.id} recipientId={equipment.user.id} sendJsonMessage={sendJsonMessage} lastJsonMessage={lastJsonMessage} readyState={readyState} />
 						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 }

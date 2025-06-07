@@ -21,14 +21,11 @@ class WebsocketService implements MessageComponentInterface
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
         
-        // Extract the user ID from the query parameters
         $queryString = parse_url($conn->httpRequest->getUri(), PHP_URL_QUERY);
         parse_str($queryString, $queryParams);
         
-        // Use the provided userId or throw an exception
         $userId = isset($queryParams['userId']) ? $queryParams['userId'] : throw new \Exception('User ID is required');
         
-        // Store the userId in the connection object for future reference
         $conn->userId = $userId;
         
         $this->setUserConnection($userId, $conn);
@@ -45,7 +42,6 @@ class WebsocketService implements MessageComponentInterface
             $this->userConnections[$userId]->send($message);
             return true;
         } else {
-            echo "There is no user with ID {$userId}\n";
             return false;
         }
     }
@@ -54,26 +50,45 @@ class WebsocketService implements MessageComponentInterface
         $data = json_decode($msg, true);
         
         if (isset($data['to']) && isset($data['message']) && isset($data['from'])) {
-            // Store message in MongoDB
             $fromUserId = $data['from'];
             $toUserId = $data['to'];
             $message = $data['message'];
             
             try {
-                // Save message to MongoDB
-                $this->mongoDBService->saveMessage($fromUserId, $toUserId, $message);
+                $chatMessage = $this->mongoDBService->saveMessage($fromUserId, $toUserId, $message);
                 echo "Message saved to database\n";
+                
+                $this->sendToUser($toUserId, json_encode([
+                    'type' => 'new_message',
+                    'from' => $fromUserId,
+                    'message' => $message,
+                    'id' => $chatMessage->getId(),
+                    'createdAt' => $chatMessage->getCreatedAt()->format('c')
+                ]));
             } catch (\Exception $e) {
                 echo "Error saving message to database: {$e->getMessage()}\n";
             }
+        } 
+        else if (isset($data['type']) && $data['type'] === 'mark_seen' && isset($data['from']) && isset($data['to'])) {
+            $fromUserId = $data['from'];
+            $toUserId = $data['to'];
             
-            // Send message to recipient
-            $this->sendToUser($toUserId, json_encode([
-                'from' => $fromUserId,
-                'message' => $message
-            ]));
-        } else {
-            echo "Need 'to', 'message' and 'from' keys\n";
+            try {
+                $this->mongoDBService->markMessagesAsSeen($fromUserId, $toUserId);
+                echo "Messages marked as seen\n";
+                
+                if (isset($this->userConnections[$toUserId])) {
+                    $this->sendToUser($toUserId, json_encode([
+                        'type' => 'messages_seen',
+                        'by' => $fromUserId
+                    ]));
+                }
+            } catch (\Exception $e) {
+                echo "Error marking messages as seen: {$e->getMessage()}\n";
+            }
+        }
+        else {
+            echo "Invalid message format\n";
         }
     }
 

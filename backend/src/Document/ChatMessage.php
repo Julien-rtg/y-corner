@@ -23,6 +23,9 @@ class ChatMessage
 
     #[ODM\Field(type: "date")]
     protected $createdAt;
+    
+    #[ODM\Field(type: "bool")]
+    protected $seen = false;
 
     public function __construct()
     {
@@ -75,6 +78,17 @@ class ChatMessage
     public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+    
+    public function isSeen(): bool
+    {
+        return $this->seen ?? false;
+    }
+    
+    public function setSeen(bool $seen): self
+    {
+        $this->seen = $seen;
         return $this;
     }
 }

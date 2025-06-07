@@ -36,6 +36,7 @@ export class AuthentificationService {
             })
                 .then(function (response) {
                     localStorage.setItem("refresh_token", response.data.refresh_token);
+                    localStorage.setItem("token", response.data.token);
                     return true;
                 })
         }
