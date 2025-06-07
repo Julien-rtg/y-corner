@@ -55,11 +55,9 @@ function App() {
     }
   };
   
-  // More efficient version that can be called frequently
   const refreshUnreadCountLightweight = async () => {
     if (user && user.id) {
       try {
-        // Use a smaller timeout and don't block UI
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
         
@@ -77,11 +75,7 @@ function App() {
 
   useEffect(() => {
     if(lastJsonMessage) {
-      console.log(lastJsonMessage);
-      
-      // Check if this is a new message
       if (lastJsonMessage && typeof lastJsonMessage === 'object' && 'type' in lastJsonMessage && lastJsonMessage.type === 'new_message') {
-        // Refresh unread count when new message arrives using the lightweight version
         refreshUnreadCountLightweight();
       }
     }

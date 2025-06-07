@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle, User, Clock } from 'lucide-react';
+import { ArrowLeft, MessageCircle, User } from 'lucide-react';
 import Chat from '@/components/chat/Chat';
 import { Button } from '@/components/ui/button';
 import { getToken, getUser } from '@/utils/getToken';
@@ -83,7 +83,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     useEffect(() => {
         fetchConversationsAndUnreadCounts();
     }, []);
-    
+
     useEffect(() => {
         if (lastJsonMessage && typeof lastJsonMessage === 'object' && 'type' in lastJsonMessage) {
             if (lastJsonMessage.type === 'new_message') {
@@ -94,16 +94,6 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 
     const handleGoBack = () => {
         navigate(-1);
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('fr-FR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        }).format(date);
     };
 
     const selectConversation = (conversation: Conversation) => {
@@ -204,12 +194,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span className="text-xs text-muted-foreground flex items-center">
-                                                    <Clock className="h-3 w-3 mr-1" />
-                                                    {formatDate(conversation.lastMessageDate)}
-                                                </span>
                                             </div>
-                                            <p className="text-sm text-muted-foreground truncate mt-1">{conversation.messages[conversation.messages.length-1].message}</p>
                                         </div>
                                     </div>
                                 </div>
