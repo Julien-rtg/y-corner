@@ -19,6 +19,11 @@ export interface Conversation {
   unreadCount: number;
 }
 
+export interface UnreadCountResponse {
+  unreadCounts: Record<string, number>;
+  totalUnread: number;
+}
+
 export class ChatService {
   private apiUrl: string;
   private socket: WebSocket | null = null;
@@ -82,6 +87,27 @@ export class ChatService {
     } catch (error) {
       console.error('Error fetching conversations:', error);
       throw error;
+    }
+  }
+  
+  async getUnreadMessageCount(userId: number): Promise<UnreadCountResponse> {
+    try {
+      const endpoint = `/api/chat/unread-count?userId=${userId}`;
+      const token = getToken();
+
+      const data = await api<UnreadCountResponse>(
+        endpoint,
+        {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+        this.apiUrl
+      );
+
+      return data || { unreadCounts: {}, totalUnread: 0 };
+    } catch (error) {
+      console.error('Error fetching unread message count:', error);
+      return { unreadCounts: {}, totalUnread: 0 };
     }
   }
 }

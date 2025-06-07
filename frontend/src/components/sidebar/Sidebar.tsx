@@ -3,11 +3,14 @@ import { AuthentificationService } from '@/services/authentification';
 import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useContext } from 'react';
+import { UnreadMessagesContext } from '@/App';
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const authService = new AuthentificationService();
+  const { unreadCount } = useContext(UnreadMessagesContext);
   
   const handleLogout = () => {
     authService.logout();
@@ -42,7 +45,14 @@ export default function Sidebar() {
                 onClick={() => navigate(item.path)}
               >
                 <item.icon className="mr-2 h-4 w-4" />
-                {item.name}
+                <div className="flex items-center justify-between w-full">
+                  <span>{item.name}</span>
+                  {item.path === '/messages' && unreadCount > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full ml-2">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
               </Button>
             </li>
           ))}

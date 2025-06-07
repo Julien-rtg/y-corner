@@ -52,5 +52,22 @@ class ChatController extends AbstractController
             return $this->json(['error' => $e->getMessage()], 500);
         }
     }
+    
+    #[Route('/unread-count', name: 'app_chat_unread_count', methods: ['GET'])]
+    public function getUnreadCount(Request $request): JsonResponse
+    {
+        $userId = $request->query->get('userId');
 
+        if (!$userId) {
+            return $this->json(['error' => 'Missing required parameter: userId'], 400);
+        }
+
+        try {
+            $unreadCounts = $this->mongoDBService->getUnreadMessageCount($userId);
+            $totalUnread = array_sum($unreadCounts);
+            return $this->json(['unreadCounts' => $unreadCounts, 'totalUnread' => $totalUnread]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
