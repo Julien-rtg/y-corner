@@ -54,6 +54,26 @@ function App() {
       }
     }
   };
+  
+  // More efficient version that can be called frequently
+  const refreshUnreadCountLightweight = async () => {
+    if (user && user.id) {
+      try {
+        // Use a smaller timeout and don't block UI
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const response = await chatService.getUnreadMessageCount(user.id, controller.signal);
+        clearTimeout(timeoutId);
+        
+        setUnreadCount(response.totalUnread);
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error fetching unread count:', error);
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     if(lastJsonMessage) {
@@ -61,8 +81,8 @@ function App() {
       
       // Check if this is a new message
       if (lastJsonMessage && typeof lastJsonMessage === 'object' && 'type' in lastJsonMessage && lastJsonMessage.type === 'new_message') {
-        // Refresh unread count when new message arrives
-        refreshUnreadCount();
+        // Refresh unread count when new message arrives using the lightweight version
+        refreshUnreadCountLightweight();
       }
     }
   }, [lastJsonMessage]);

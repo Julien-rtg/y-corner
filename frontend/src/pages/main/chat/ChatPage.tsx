@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, User, Clock } from 'lucide-react';
 import Chat from '@/components/chat/Chat';
 import { Button } from '@/components/ui/button';
 import { getToken, getUser } from '@/utils/getToken';
 import { api } from '@/lib/api';
+import chatService from '@/services/chat';
+import { UnreadMessagesContext } from '@/App';
 
 interface Message {
     id: string;
@@ -19,38 +21,76 @@ interface Conversation {
     recipientId: string;
     messages: Message[];
     lastMessageDate: string;
+    unreadCount?: number;
 }
 
 function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     const navigate = useNavigate();
     const user = getUser();
+    const { refreshUnreadCount } = useContext(UnreadMessagesContext);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    useEffect(() => {
-        const fetchConversations = async () => {
-            if (!user || !user.id) return;
-            
-            try {
-                setLoading(true);
-                const data = await api(`/api/chat/conversations?userId=${user.id}`, {
-                    method: 'GET',
-                    headers: { Authorization: `Bearer ${getToken()}` },
-                }, import.meta.env.VITE_API_URL || '');
-
-                const conversationsData = data as Conversation[];
-                setConversations(conversationsData);
-                setLoading(false);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-                setLoading(false);
-            }
-        };
+    // Function to fetch conversations and unread counts
+    const fetchConversationsAndUnreadCounts = async () => {
+        if (!user || !user.id) return;
         
-        fetchConversations();
+        try {
+            setLoading(true);
+            const data = await api(`/api/chat/conversations?userId=${user.id}`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${getToken()}` },
+            }, import.meta.env.VITE_API_URL || '');
+
+            const conversationsData = data as Conversation[];
+            
+            // Get unread counts
+            const unreadResponse = await chatService.getUnreadMessageCount(user.id);
+            
+            // Add unread counts to conversations
+            const conversationsWithUnread = conversationsData.map(conv => ({
+                ...conv,
+                unreadCount: unreadResponse.unreadCounts[conv.recipientId] || 0
+            }));
+            
+            setConversations(conversationsWithUnread);
+            setLoading(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+            setLoading(false);
+        }
+    };
+    
+    const refreshUnreadCountsOnly = async () => {
+        if (!user || !user.id) return;
+        
+        try {
+            const unreadResponse = await chatService.getUnreadMessageCount(user.id);
+            
+            setConversations(prevConversations => 
+                prevConversations.map(conv => ({
+                    ...conv,
+                    unreadCount: unreadResponse.unreadCounts[conv.recipientId] || 0
+                }))
+            );
+        } catch (err) {
+            console.error('Error refreshing unread counts:', err);
+        }
+    };
+    
+    useEffect(() => {
+        fetchConversationsAndUnreadCounts();
     }, []);
+    
+    useEffect(() => {
+        if (lastJsonMessage && typeof lastJsonMessage === 'object' && 'type' in lastJsonMessage) {
+            if (lastJsonMessage.type === 'new_message') {
+                refreshUnreadCountsOnly();
+            }
+        }
+    }, [lastJsonMessage]);
 
     const handleGoBack = () => {
         navigate(-1);
@@ -68,6 +108,25 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 
     const selectConversation = (conversation: Conversation) => {
         setSelectedConversation(conversation);
+        
+        if (user && user.id && conversation.recipientId) {
+            chatService.markMessagesAsSeen(parseInt(conversation.recipientId), user.id);
+            
+            // Update the conversation in the list to show 0 unread messages
+            setConversations(prevConversations => {
+                const updatedConversations = prevConversations.map(conv => 
+                    conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
+                );
+                
+                // Also update the total unread count in the context
+                if (conversation.unreadCount && conversation.unreadCount > 0) {
+                    // Refresh the unread count in the context to update the sidebar badge
+                    refreshUnreadCount();
+                }
+                
+                return updatedConversations;
+            });
+        }
     };
 
     if (!user || !user.id) {
@@ -137,7 +196,14 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
-                                                <h3 className="font-semibold truncate">Utilisateur {conversation.recipientId}</h3>
+                                                <div className="flex items-center">
+                                                    <h3 className="font-semibold truncate">Utilisateur {conversation.recipientId}</h3>
+                                                    {(conversation.unreadCount ?? 0) > 0 && (
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full ml-2">
+                                                            {conversation.unreadCount}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span className="text-xs text-muted-foreground flex items-center">
                                                     <Clock className="h-3 w-3 mr-1" />
                                                     {formatDate(conversation.lastMessageDate)}

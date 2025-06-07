@@ -90,7 +90,7 @@ export class ChatService {
     }
   }
   
-  async getUnreadMessageCount(userId: number): Promise<UnreadCountResponse> {
+  async getUnreadMessageCount(userId: number, signal?: AbortSignal): Promise<UnreadCountResponse> {
     try {
       const endpoint = `/api/chat/unread-count?userId=${userId}`;
       const token = getToken();
@@ -100,6 +100,7 @@ export class ChatService {
         {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` },
+          signal
         },
         this.apiUrl
       );
