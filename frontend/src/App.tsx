@@ -11,6 +11,7 @@ import ChatPage from "@/pages/main/chat/ChatPage";
 import useWebSocket from 'react-use-websocket';
 import chatService from '@/services/chat';
 import { getUser } from '@/utils/getToken';
+import Profile from './pages/main/profile/Profile';
 
 export const UnreadMessagesContext = createContext<{
   unreadCount: number;
@@ -129,6 +130,11 @@ function App() {
               lastJsonMessage={lastJsonMessage} 
               readyState={readyState}
             /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/profile"
+            element={isAuthenticated ? 
+            <Profile /> : <Navigate to="/login" />}
           />
         </Routes>
         <Toaster richColors />
