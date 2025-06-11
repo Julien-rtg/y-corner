@@ -11,5 +11,8 @@ export function getToken(): string | null {
 
 export function getUser(): User {
     const user = localStorage.getItem('user');
+    if(!user) {
+        return {} as User;
+    }
     return JSON.parse(user || '');
 }
