@@ -29,21 +29,23 @@ function App() {
 
   const user = getUser();
 
-  const WS_URL = import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString());
+  const WS_URL = user && user.id ? import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString()) : '';
     
-  const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = useWebSocket(
+  const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = WS_URL ? useWebSocket(
       WS_URL,
       {
           share: false,
           shouldReconnect: () => true,
           onOpen: () => {
               console.log('WebSocket connection established');
-              chatService.setWebSocket(getWebSocket() as WebSocket);
+              if (getWebSocket) {
+                  chatService.setWebSocket(getWebSocket() as WebSocket);
+              }
           },
           onClose: (event) => console.log('WebSocket connection closed', event),
           onError: (error) => console.error('WebSocket error:', error),
       },
-  )
+  ) : {};
 
   const refreshUnreadCount = async () => {
     if (user && user.id) {
