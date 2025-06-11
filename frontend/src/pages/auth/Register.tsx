@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthentificationService } from '@/services/authentification';
 import { Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,6 +40,8 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const authService = new AuthentificationService();
   const { register, handleSubmit, formState: { errors }, control } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
@@ -45,11 +49,31 @@ export default function Register() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      // Implement your registration logic here
-      console.log('Register data:', data);
-      toast.success('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte.');
-    } catch (error) {
-      toast.error('Échec de l\'inscription. Veuillez réessayer.');
+      const registerData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        birthDate: data.birthDate,
+        address: data.address,
+        city: data.city,
+        country: 'France',
+        postalCode: data.postalCode
+      };
+      
+      const response = await authService.register(registerData);
+      
+      if (response.status === 201) {
+        toast.success('Inscription réussie ! Veuillez vous connecter.');
+        navigate('/login');
+      }
+    } catch (error: any) {
+      console.error('Erreur d\'inscription:', error);
+      if (error.response?.data?.message) {
+        toast.error(`Échec de l'inscription: ${error.response.data.message}`);
+      } else {
+        toast.error('Échec de l\'inscription. Veuillez réessayer.');
+      }
     } finally {
       setIsLoading(false);
     }

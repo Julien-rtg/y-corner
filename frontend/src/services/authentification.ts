@@ -20,6 +20,32 @@ export class AuthentificationService {
         }
     }
 
+    public async register(userData: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        birthDate: string;
+        address: string;
+        city: string;
+        country: string;
+        postalCode?: string;
+    }): Promise<any> {
+        try {
+            // Préparer les données pour le format attendu par le backend
+            const registerData = {
+                ...userData,
+                country: userData.country || 'France' // Valeur par défaut si non fournie
+            };
+            
+            // Appel à l'API d'inscription
+            return axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
+        }
+        catch (error) {
+            throw error;
+        }
+    }
+
     public logout(): void {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");

@@ -20,7 +20,7 @@ class RegistrationController extends AbstractController
 
         $user = new User();
         $user->setEmail($datas['email']);
-        $user->setRoles($datas['roles']);
+        $user->setRoles(['ROLE_USER']);
         $user->setFirstName($datas['firstName']);
         $user->setLastName($datas['lastName']);
         $user->setBirthDate(new \DateTime($datas['birthDate']));
