@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 class RegistrationController extends AbstractController
 {
 
-    #[Route('/register', name: 'app_register', methods: ['POST'])]
+    #[Route('/api/register', name: 'app_register', methods: ['POST'])]
     public function index(UserPasswordHasherInterface $passwordHasher, Request $request, EntityManagerInterface $entityManager): Response
     {
         $datas = json_decode($request->getContent(), true);

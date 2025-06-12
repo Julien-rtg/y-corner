@@ -39,7 +39,7 @@ export class AuthentificationService {
             };
             
             // Appel à l'API d'inscription
-            return axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
+            return axios.post(`${import.meta.env.VITE_API_URL}/api/register`, registerData);
         }
         catch (error) {
             throw error;
