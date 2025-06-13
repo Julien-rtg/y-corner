@@ -68,43 +68,17 @@ function MyEquipments() {
                     </div>
                 )}
 
-
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold">Mes Équipements</h1>
-                    <Button onClick={handleAddEquipment} className="bg-primary hover:bg-primary/90">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Ajouter un équipement
-                    </Button>
-                </div>
-
-                {equipments.length === 0 ? (
-                    <div className="text-center py-16 bg-muted/30 rounded-lg border border-dashed">
-                        <div className="mb-4">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-16 w-16 mx-auto text-muted-foreground/50"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M20 7l-8-4-8 4m16 0l-8 4m-8-4l8 4m8 4l-8 4m8-4l-8-4m-8 4l8-4"
-                                />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold mb-2">Aucun équipement</h2>
-                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                            Vous n'avez pas encore d'équipements listés. Commencez par ajouter votre premier équipement.
-                        </p>
+                {!loading && (
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-3xl font-bold">Mes Équipements</h1>
                         <Button onClick={handleAddEquipment} className="bg-primary hover:bg-primary/90">
                             <Plus className="mr-2 h-4 w-4" />
                             Ajouter un équipement
                         </Button>
                     </div>
-                ) : (
+                )}
+
+                {equipments.length !== 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {equipments.map((equipment) => (
                             <Card key={equipment.id} className="overflow-hidden hover:shadow-md transition-shadow">
@@ -177,6 +151,35 @@ function MyEquipments() {
                                 </CardFooter>
                             </Card>
                         ))}
+                    </div>
+                )}
+
+                {equipments.length === 0 && !loading && (
+                    <div className="text-center py-16 bg-muted/30 rounded-lg border border-dashed">
+                        <div className="mb-4">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-16 w-16 mx-auto text-muted-foreground/50"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m-8-4l8 4m8 4l-8 4m8-4l-8-4m-8 4l8-4"
+                                />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">Aucun équipement</h2>
+                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                            Vous n'avez pas encore d'équipements listés. Commencez par ajouter votre premier équipement.
+                        </p>
+                        <Button onClick={handleAddEquipment} className="bg-primary hover:bg-primary/90">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Ajouter un équipement
+                        </Button>
                     </div>
                 )}
             </div>
