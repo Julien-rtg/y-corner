@@ -5,12 +5,14 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Entity\Equipment;
 use App\Entity\Image;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -93,5 +95,23 @@ class EquipmentController extends AbstractController
             'message' => 'Welcome to your new controller!',
             'id' => $id
         ]);
+    }
+    
+    #[Route('/api/user/equipments', name: 'app_user_equipments', methods: ['GET'])]
+    public function getUserEquipments(#[CurrentUser] ?User $user, EntityManagerInterface $entityManager): JsonResponse
+    {
+        if (!$user) {
+            return new JsonResponse(['message' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+        
+        $data = $entityManager->getRepository(Equipment::class)->findByUser($user);
+        $equipments = $this->serializer->serialize($data, 'json', [
+            'groups' => 'show-equipment',
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        return new JsonResponse($equipments, Response::HTTP_OK, [], true);
     }
 }

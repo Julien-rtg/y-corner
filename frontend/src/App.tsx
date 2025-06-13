@@ -5,20 +5,21 @@ import Register from '@/pages/auth/Register';
 import ResetPassword from '@/pages/auth/ResetPassword';
 import { useEffect, useState, createContext } from 'react';
 import { AuthentificationService } from '@/services/authentification';
-import Equipment from "@/pages/main/equipments/equipment";
+import Equipment from "@/pages/main/equipments/Equipment";
 import Home from "@/pages/main/home/Home";
 import ChatPage from "@/pages/main/chat/ChatPage";
 import useWebSocket from 'react-use-websocket';
 import chatService from '@/services/chat';
 import { getUser } from '@/utils/getToken';
 import Profile from './pages/main/profile/Profile';
+import MyEquipments from './pages/main/my-equipments/MyEquipments';
 
 export const UnreadMessagesContext = createContext<{
   unreadCount: number;
   refreshUnreadCount: () => Promise<void>;
-}>({ 
+}>({
   unreadCount: 0,
-  refreshUnreadCount: async () => {}
+  refreshUnreadCount: async () => { }
 });
 
 function App() {
@@ -30,21 +31,21 @@ function App() {
   const user = getUser();
 
   const WS_URL = user && user.id ? import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString()) : '';
-    
+
   const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = WS_URL ? useWebSocket(
-      WS_URL,
-      {
-          share: false,
-          shouldReconnect: () => true,
-          onOpen: () => {
-              console.log('WebSocket connection established');
-              if (getWebSocket) {
-                  chatService.setWebSocket(getWebSocket() as WebSocket);
-              }
-          },
-          onClose: (event) => console.log('WebSocket connection closed', event),
-          onError: (error) => console.error('WebSocket error:', error),
+    WS_URL,
+    {
+      share: false,
+      shouldReconnect: () => true,
+      onOpen: () => {
+        console.log('WebSocket connection established');
+        if (getWebSocket) {
+          chatService.setWebSocket(getWebSocket() as WebSocket);
+        }
       },
+      onClose: (event) => console.log('WebSocket connection closed', event),
+      onError: (error) => console.error('WebSocket error:', error),
+    },
   ) : {};
 
   const refreshUnreadCount = async () => {
@@ -57,16 +58,16 @@ function App() {
       }
     }
   };
-  
+
   const refreshUnreadCountLightweight = async () => {
     if (user && user.id) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
-        
+
         const response = await chatService.getUnreadMessageCount(user.id, controller.signal);
         clearTimeout(timeoutId);
-        
+
         setUnreadCount(response.totalUnread);
       } catch (error: unknown) {
         if (error instanceof Error && error.name !== 'AbortError') {
@@ -77,7 +78,7 @@ function App() {
   };
 
   useEffect(() => {
-    if(lastJsonMessage) {
+    if (lastJsonMessage) {
       if (lastJsonMessage && typeof lastJsonMessage === 'object' && 'type' in lastJsonMessage && lastJsonMessage.type === 'new_message') {
         refreshUnreadCountLightweight();
       }
@@ -89,7 +90,7 @@ function App() {
       setIsLoading(true);
       try {
         const response = await auth.refresh();
-        if(!response) {
+        if (!response) {
           setIsAuthenticated(false);
         } else {
           setIsAuthenticated(true);
@@ -102,7 +103,7 @@ function App() {
         setIsLoading(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
@@ -118,26 +119,23 @@ function App() {
           <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
           <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/" />} />
           <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-          <Route path="/messages" element={isAuthenticated ? 
-            <ChatPage 
-              sendJsonMessage={sendJsonMessage} 
-              lastJsonMessage={lastJsonMessage} 
-              readyState={readyState} 
+          <Route path="/messages" element={isAuthenticated ?
+            <ChatPage
+              sendJsonMessage={sendJsonMessage}
+              lastJsonMessage={lastJsonMessage}
+              readyState={readyState}
             /> : <Navigate to="/login" />} />
           <Route
             path="/equipment/:id"
-            element={isAuthenticated ? 
-            <Equipment 
-              sendJsonMessage={sendJsonMessage} 
-              lastJsonMessage={lastJsonMessage} 
-              readyState={readyState}
-            /> : <Navigate to="/login" />}
+            element={isAuthenticated ?
+              <Equipment
+                sendJsonMessage={sendJsonMessage}
+                lastJsonMessage={lastJsonMessage}
+                readyState={readyState}
+              /> : <Navigate to="/login" />}
           />
-          <Route
-            path="/profile"
-            element={isAuthenticated ? 
-            <Profile /> : <Navigate to="/login" />}
-          />
+          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/my-equipments" element={isAuthenticated ? <MyEquipments /> : <Navigate to="/login" />} />
         </Routes>
         <Toaster richColors />
       </Router>
