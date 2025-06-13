@@ -45,6 +45,8 @@ function Equipment() {
   });
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | ''>('');
+  const [newCategory, setNewCategory] = useState<string>('');
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<boolean>(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,24 +98,55 @@ function Equipment() {
   };
 
   const handleAddCategory = () => {
-    if (!selectedCategoryId) return;
-    
-    const categoryId = Number(selectedCategoryId);
-    const selectedCategory = availableCategories.find(cat => cat.id === categoryId);
-    
-    if (!selectedCategory) return;
-    
-    // Vérifier si la catégorie est déjà sélectionnée
-    const categoryExists = formData.categories.some(category => category.id === categoryId);
-    
-    if (!categoryExists) {
+    if (showNewCategoryInput) {
+      if (!newCategory.trim()) return;
+      
+      const categoryExists = availableCategories.some(
+        category => category.name.toLowerCase() === newCategory.trim().toLowerCase()
+      );
+      
+      if (categoryExists) {
+        toast.error('Cette catégorie existe déjà');
+        return;
+      }
+      
+      const newCategoryObj: Category = {
+        id: -Date.now(),
+        name: newCategory.trim()
+      };
+      
       setFormData(prev => ({
         ...prev,
-        categories: [...prev.categories, selectedCategory]
+        categories: [...prev.categories, newCategoryObj]
       }));
+      
+      setNewCategory('');
+      setShowNewCategoryInput(false);
+    } else {
+      if (!selectedCategoryId) return;
+      
+      const categoryId = Number(selectedCategoryId);
+      const selectedCategory = availableCategories.find(cat => cat.id === categoryId);
+      
+      if (!selectedCategory) return;
+      
+      const categoryExists = formData.categories.some(category => category.id === categoryId);
+      
+      if (!categoryExists) {
+        setFormData(prev => ({
+          ...prev,
+          categories: [...prev.categories, selectedCategory]
+        }));
+      }
+      
+      setSelectedCategoryId('');
     }
-    
+  };
+  
+  const toggleNewCategoryInput = () => {
+    setShowNewCategoryInput(!showNewCategoryInput);
     setSelectedCategoryId('');
+    setNewCategory('');
   };
 
   const handleRemoveCategory = (categoryId: number) => {
@@ -180,7 +213,6 @@ function Equipment() {
 
     try {
       if (isEditMode) {
-        // Mode édition
         const endpoint = API_URL_EQUIPMENT.replace('{id}', id!);
         await api(
           endpoint,
@@ -203,7 +235,6 @@ function Equipment() {
         );
         toast.success('Équipement mis à jour avec succès');
       } else {
-        // Mode création
         await api(
           API_URL_CREATE_EQUIPMENT,
           {
@@ -217,9 +248,11 @@ function Equipment() {
               price: formData.price,
               description: formData.description,
               city: formData.city,
-              category_id: formData.categories[0].id, // Envoi de l'ID de la catégorie
-              category: formData.categories[0].name, // Fallback si l'ID n'est pas trouvé
-              image: formData.images[0].content, // L'image en base64 sera convertie en fichier côté serveur
+              categories: formData.categories.map(category => ({
+                id: category.id,
+                name: category.name
+              })),
+              image: formData.images[0].content,
               user_id: user?.id
             }])
           },
@@ -228,7 +261,6 @@ function Equipment() {
         toast.success('Équipement créé avec succès');
       }
       
-      // Rediriger vers la liste des équipements
       navigate('/my-equipments');
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement:', error);
@@ -326,27 +358,50 @@ function Equipment() {
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold mb-4">Catégories *</h2>
                   
-                  <div className="flex items-center space-x-2 mb-4">
-                    <select
-                      id="category"
-                      value={selectedCategoryId}
-                      onChange={(e) => setSelectedCategoryId(e.target.value as number | '')}
-                      className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Sélectionner une catégorie</option>
-                      {availableCategories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Button 
-                      type="button" 
-                      onClick={handleAddCategory}
-                      variant="outline"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col space-y-2 mb-4">
+                    <div className="flex items-center space-x-2">
+                      {showNewCategoryInput ? (
+                        <Input
+                          id="newCategory"
+                          value={newCategory}
+                          onChange={(e) => setNewCategory(e.target.value)}
+                          placeholder="Nom de la nouvelle catégorie"
+                          className="bg-white"
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                        />
+                      ) : (
+                        <select
+                          id="category"
+                          value={selectedCategoryId}
+                          onChange={(e) => setSelectedCategoryId(e.target.value as number | '')}
+                          className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Sélectionner une catégorie</option>
+                          {availableCategories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <Button 
+                        type="button" 
+                        onClick={handleAddCategory}
+                        variant="outline"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={toggleNewCategoryInput}
+                        variant="link"
+                        className="text-sm p-0 h-auto"
+                      >
+                        {showNewCategoryInput ? 'Utiliser une catégorie existante' : 'Créer une nouvelle catégorie'}
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2">

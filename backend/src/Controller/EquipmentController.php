@@ -61,19 +61,30 @@ class EquipmentController extends AbstractController
             $imageData = $data['image'];
             $imagePath = $this->saveBase64Image($imageData);
             
-            $category = $entityManager->getRepository(Category::class)->find($data['category_id']);
-            if (!$category) {
-                $category = new Category();
-                $category->setName($data['category']);
-                $entityManager->persist($category);
-            }
-            
             $equipment = new Equipment();
             $equipment->setName($data['name']);
             $equipment->setCity($data['city']);
             $equipment->setPrice($data['price']);
             $equipment->setDescription($data['description']);
-            $equipment->addCategory($category);
+            
+            if (isset($data['categories']) && is_array($data['categories'])) {
+                foreach ($data['categories'] as $categoryData) {
+                    $categoryId = $categoryData['id'] ?? null;
+                    $categoryName = $categoryData['name'] ?? '';
+                    
+                    if ($categoryId > 0) {
+                        $category = $entityManager->getRepository(Category::class)->find($categoryId);
+                        if ($category) {
+                            $equipment->addCategory($category);
+                        }
+                    } elseif (!empty($categoryName)) {
+                        $category = new Category();
+                        $category->setName($categoryName);
+                        $entityManager->persist($category);
+                        $equipment->addCategory($category);
+                    }
+                }
+            }
 
             if (isset($data['user_id'])) {
                 $user = $entityManager->getRepository(User::class)->find($data['user_id']);
