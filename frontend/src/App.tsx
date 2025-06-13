@@ -13,6 +13,7 @@ import chatService from '@/services/chat';
 import { getUser } from '@/utils/getToken';
 import Profile from './pages/main/profile/Profile';
 import MyEquipments from './pages/main/my-equipments/MyEquipments';
+import Equipment from './pages/main/equipment/Equipment';
 
 export const UnreadMessagesContext = createContext<{
   unreadCount: number;
@@ -136,6 +137,8 @@ function App() {
           />
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/my-equipments" element={isAuthenticated ? <MyEquipments /> : <Navigate to="/login" />} />
+          <Route path="/equipment" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
+          <Route path="/edit-equipment/:id" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
         </Routes>
         <Toaster richColors />
       </Router>

@@ -32,18 +32,15 @@ function MyEquipments() {
     }, []);
 
     const handleAddEquipment = () => {
-        // Rediriger vers la page d'ajout d'équipement
-        navigate("/add-equipment");
+        navigate("/equipment");
     };
 
     const handleEditEquipment = (id: number) => {
-        // Rediriger vers la page d'édition d'équipement
         navigate(`/edit-equipment/${id}`);
     };
 
     const handleDeleteEquipment = (id: number) => {
-        // Implémenter la suppression d'équipement
-        alert(`Suppression de l'équipement ${id} - Fonctionnalité à implémenter`);
+        alert(`Suppression de l'équipement ${id}`);
     };
 
     if (error) {

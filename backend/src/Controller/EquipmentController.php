@@ -55,28 +55,72 @@ class EquipmentController extends AbstractController
     public function create(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $datas = json_decode($request->getContent(), true);
+        $responseData = [];
+        
         foreach ($datas as $data) {
-            $image = new Image();
-            $image->setContent($data['image']);
-
-            $category = new Category();
-            $category->setName($data['category']);
-
+            $imageData = $data['image'];
+            $imagePath = $this->saveBase64Image($imageData);
+            
+            $category = $entityManager->getRepository(Category::class)->find($data['category_id']);
+            if (!$category) {
+                $category = new Category();
+                $category->setName($data['category']);
+                $entityManager->persist($category);
+            }
+            
             $equipment = new Equipment();
             $equipment->setName($data['name']);
             $equipment->setCity($data['city']);
             $equipment->setPrice($data['price']);
             $equipment->setDescription($data['description']);
-            $equipment->addImage($image);
             $equipment->addCategory($category);
 
-            $entityManager->persist($image);
-            $entityManager->persist($category);
+            if (isset($data['user_id'])) {
+                $user = $entityManager->getRepository(User::class)->find($data['user_id']);
+                if ($user) {
+                    $equipment->setUser($user);
+                }
+            }
+            
             $entityManager->persist($equipment);
+            
+            $image = new Image();
+            $image->setContent($imagePath);
+            $image->setEquipment($equipment);
+            $entityManager->persist($image);
+            
+            $responseData[] = [
+                'id' => $equipment->getId(),
+                'name' => $equipment->getName(),
+                'image_path' => $imagePath
+            ];
         }
+        
         $entityManager->flush();
 
-        return $this->json($datas);
+        return $this->json($responseData);
+    }
+    
+    private function saveBase64Image(string $base64Image): string
+    {
+        if (preg_match('/^data:image\/([a-zA-Z]+);base64,(.+)$/', $base64Image, $matches)) {
+            $imageType = $matches[1];
+            $imageData = base64_decode($matches[2]);
+            
+            $uploadDir = __DIR__ . '/../../public/images/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $filename = uniqid() . '.' . $imageType;
+            $filePath = $uploadDir . $filename;
+            
+            file_put_contents($filePath, $imageData);
+            
+            return '/images/' . $filename;
+        }
+        
+        throw new \InvalidArgumentException('Format d\'image invalide');
     }
 
     #[Route('/api/equipment/{id}', name: 'app_equipment_update', methods: ['PUT'])]
