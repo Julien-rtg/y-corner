@@ -41,7 +41,7 @@ async function getEquipment(id: string): Promise<EquipmentInterface> {
 	}
 }
 
-function Equipment({ sendJsonMessage, lastJsonMessage, readyState }: any) {
+function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 	const [equipment, setEquipment] = useState<EquipmentInterface | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -280,4 +280,4 @@ function Equipment({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 	);
 }
 
-export default Equipment;
+export default EquipmentDetail;
