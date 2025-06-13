@@ -82,7 +82,7 @@ function MyEquipments() {
                                 <div className="aspect-video bg-muted relative overflow-hidden">
                                     {equipment.images && equipment.images.length > 0 ? (
                                         <img
-                                            src={equipment.images[0].content}
+                                            src={`${import.meta.env.VITE_API_URL}${equipment.images[0].content}`}
                                             alt={equipment.name}
                                             className="w-full h-full object-cover"
                                         />

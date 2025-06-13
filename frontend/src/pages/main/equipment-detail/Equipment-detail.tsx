@@ -116,7 +116,7 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 									{equipment.images && equipment.images.length > 0 ? (
 										<>
 											<img
-												src={equipment.images[selectedImageIndex]?.content}
+												src={`${import.meta.env.VITE_API_URL}${equipment.images[selectedImageIndex]?.content}`}
 												alt={equipment.name}
 												className="object-contain max-h-[380px] max-w-full p-2"
 											/>
@@ -173,7 +173,7 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 												aria-label={`Sélectionner l'image ${index + 1}`}
 											>
 												<img
-													src={img.content}
+													src={`${import.meta.env.VITE_API_URL}${img.content}`}
 													alt={`${equipment.name} miniature ${index + 1}`}
 													className="object-cover w-full h-full"
 												/>
