@@ -7,27 +7,31 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import Sidebar from "@/components/sidebar/Sidebar";
+import { toast } from "sonner";
+import ConfirmationModal from "@/components/modal/ConfirmationModal";
 
 function MyEquipments() {
     const [equipments, setEquipments] = useState<Equipment[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+    const [equipmentToDelete, setEquipmentToDelete] = useState<number | null>(null);
     const navigate = useNavigate();
     const equipmentService = new EquipmentService();
 
-    useEffect(() => {
-        const fetchUserEquipments = async () => {
-            try {
-                setLoading(true);
-                const data = await equipmentService.getUserEquipments();
-                setEquipments(data);
-                setLoading(false);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "Une erreur est survenue");
-                setLoading(false);
-            }
-        };
+    const fetchUserEquipments = async () => {
+        try {
+            setLoading(true);
+            const data = await equipmentService.getUserEquipments();
+            setEquipments(data);
+            setLoading(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue");
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchUserEquipments();
     }, []);
 
@@ -40,7 +44,23 @@ function MyEquipments() {
     };
 
     const handleDeleteEquipment = (id: number) => {
-        alert(`Suppression de l'équipement ${id}`);
+        setEquipmentToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteEquipment = async () => {
+        if (equipmentToDelete) {
+            try {
+                await equipmentService.deleteEquipment(equipmentToDelete);
+                toast.success("Équipement supprimé avec succès");
+                fetchUserEquipments();
+            } catch (error) {
+                toast.error("Erreur lors de la suppression de l'équipement");
+                console.error(error);
+            }
+        }
+        setIsDeleteModalOpen(false);
+        setEquipmentToDelete(null);
     };
 
     if (error) {
@@ -180,6 +200,17 @@ function MyEquipments() {
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDeleteEquipment}
+                title="Confirmer la suppression"
+                message="Êtes-vous sûr de vouloir supprimer cet équipement ? Cette action est irréversible."
+                confirmLabel="Supprimer"
+                cancelLabel="Annuler"
+                variant="danger"
+            />
         </div>
     );
 }

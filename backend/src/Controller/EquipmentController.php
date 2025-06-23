@@ -135,21 +135,133 @@ class EquipmentController extends AbstractController
     }
 
     #[Route('/api/equipment/{id}', name: 'app_equipment_update', methods: ['PUT'])]
-    public function update(int $id): JsonResponse
+    public function update(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'id' => $id
+        $equipment = $entityManager->getRepository(Equipment::class)->find($id);
+        
+        if (!$equipment) {
+            return new JsonResponse(['message' => 'Équipement non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        
+        $user = $this->getUser();
+        if (!$user || $equipment->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['message' => 'Vous n\'êtes pas autorisé à modifier cet équipement'], Response::HTTP_FORBIDDEN);
+        }
+        
+        $data = json_decode($request->getContent(), true);
+        
+        if (isset($data['name'])) {
+            $equipment->setName($data['name']);
+        }
+        
+        if (isset($data['city'])) {
+            $equipment->setCity($data['city']);
+        }
+        
+        if (isset($data['price'])) {
+            $equipment->setPrice($data['price']);
+        }
+        
+        if (isset($data['description'])) {
+            $equipment->setDescription($data['description']);
+        }
+        
+        if (isset($data['categories']) && is_array($data['categories'])) {
+            foreach ($equipment->getCategories() as $category) {
+                $equipment->removeCategory($category);
+            }
+            
+            foreach ($data['categories'] as $categoryData) {
+                $categoryId = $categoryData['id'] ?? null;
+                $categoryName = $categoryData['name'] ?? '';
+                
+                if ($categoryId > 0) {
+                    $category = $entityManager->getRepository(Category::class)->find($categoryId);
+                    if ($category) {
+                        $equipment->addCategory($category);
+                    }
+                } elseif (!empty($categoryName)) {
+                    $category = new Category();
+                    $category->setName($categoryName);
+                    $entityManager->persist($category);
+                    $equipment->addCategory($category);
+                }
+            }
+        }
+        
+        $existingImages = $entityManager->getRepository(Image::class)->findBy(['equipment' => $equipment]);
+        
+        foreach ($existingImages as $existingImage) {
+            $oldImagePath = __DIR__ . '/../../public' . $existingImage->getContent();
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+            
+            $entityManager->remove($existingImage);
+        }
+        
+        $newImages = [];
+        
+        if (isset($data['image']) && !empty($data['image'])) {
+            $newImages[] = $data['image'];
+        }
+        else if (isset($data['images']) && is_array($data['images']) && !empty($data['images'])) {
+            foreach ($data['images'] as $imageData) {
+                if (isset($imageData['content']) && !empty($imageData['content'])) {
+                    $newImages[] = $imageData['content'];
+                }
+            }
+        }
+        
+        foreach ($newImages as $imageContent) {
+            $newImagePath = $this->saveBase64Image($imageContent);
+            $image = new Image();
+            $image->setContent($newImagePath);
+            $image->setEquipment($equipment);
+            $entityManager->persist($image);
+        }
+        
+        
+        $entityManager->flush();
+        
+        $updatedEquipment = $this->serializer->serialize($equipment, 'json', [
+            'groups' => 'show-equipment',
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                return $object->getId();
+            }
         ]);
+        
+        return new JsonResponse($updatedEquipment, Response::HTTP_OK, [], true);
     }
 
     #[Route('/api/equipment/{id}', name: 'app_equipment_delete', methods: ['DELETE'])]
-    public function delete(int $id): JsonResponse
+    public function delete(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'id' => $id
-        ]);
+        $equipment = $entityManager->getRepository(Equipment::class)->find($id);
+        
+        if (!$equipment) {
+            return new JsonResponse(['message' => 'Équipement non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        
+        $user = $this->getUser();
+        if (!$user || $equipment->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['message' => 'Vous n\'êtes pas autorisé à supprimer cet équipement'], Response::HTTP_FORBIDDEN);
+        }
+        
+        $images = $entityManager->getRepository(Image::class)->findBy(['equipment' => $equipment]);
+        foreach ($images as $image) {
+            $imagePath = __DIR__ . '/../../public' . $image->getContent();
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+            
+            $entityManager->remove($image);
+        }
+        
+        $entityManager->remove($equipment);
+        $entityManager->flush();
+        
+        return new JsonResponse(['message' => 'Équipement supprimé avec succès'], Response::HTTP_OK);
     }
     
     #[Route('/api/user/equipments', name: 'app_user_equipments', methods: ['GET'])]

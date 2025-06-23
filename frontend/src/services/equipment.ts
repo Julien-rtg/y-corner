@@ -1,5 +1,5 @@
 import { Equipment } from "../interfaces/Equipment.interface";
-import { API_URL_EQUIPMENT, API_URL_EQUIPMENTS, API_URL_USER_EQUIPMENTS } from "@/constants/api.ts";
+import { API_URL_CREATE_EQUIPMENT, API_URL_EQUIPMENT, API_URL_EQUIPMENTS, API_URL_USER_EQUIPMENTS } from "@/constants/api.ts";
 import { api } from "@/lib/api.ts";
 import { getToken } from "@/utils/getToken.ts";
 
@@ -76,6 +76,48 @@ export class EquipmentService {
             }
 
             return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                throw new Error("Une erreur inconnue est survenue.");
+            }
+        }
+    }
+
+    public async deleteEquipment(id: number): Promise<void> {
+        const token = getToken();
+        try {
+            const endpoint = API_URL_EQUIPMENT.replace("{id}", id.toString());
+            await api<void>(
+                endpoint,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+                import.meta.env.VITE_API_URL || ""
+            );
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                throw new Error("Une erreur inconnue est survenue.");
+            }
+        }
+    }
+
+    public async update(id: number): Promise<void> {
+        const token = getToken();
+        try {
+            const endpoint = API_URL_EQUIPMENT.replace("{id}", id.toString());
+            await api<void>(
+                endpoint,
+                {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+                import.meta.env.VITE_API_URL || ""
+            );
         } catch (error) {
             if (error instanceof Error) {
                 throw error;

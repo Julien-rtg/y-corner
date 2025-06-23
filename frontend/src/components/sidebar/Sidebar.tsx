@@ -22,7 +22,7 @@ export default function Sidebar() {
     { name: 'Mes messages', icon: MessageCircle, path: '/messages' },
     { name: 'Mes équipements', icon: Package, path: '/my-equipments' },
     { name: 'Wishlist', icon: Heart, path: '/wishlist' },
-    { name: 'Ajouter équipement', icon: PlusCircle, path: '/add-equipment' },
+    { name: 'Ajouter équipement', icon: PlusCircle, path: '/equipment' },
     { name: 'Contact', icon: MailOpen, path: '/contact' },
   ];
 
