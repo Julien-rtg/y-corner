@@ -1,5 +1,6 @@
 import { Category } from "./Category.interface";
 import { Image } from "./Image.interface";
+import { User } from "./User.interface";
 
 export interface Equipment {
     id: number;
@@ -7,5 +8,7 @@ export interface Equipment {
     categories: Category[];
     city: string;
     price: number;
-    image: Image[];
+    images: Image[];
+    user: User;
+    description: string;
 }
