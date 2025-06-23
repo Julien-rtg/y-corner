@@ -6,3 +6,5 @@ export const API_URL_EQUIPMENT = '/api/equipment/{id}';
 export const API_URL_CREATE_EQUIPMENT = '/api/equipment';
 export const API_URL_USER_EQUIPMENTS = '/api/user/equipments';
 export const API_URL_CATEGORIES = '/api/categories';
+export const API_URL_USER_FAVORITES = '/api/users/{id}/favorites';
+export const API_URL_USER_FAVORITE_EQUIPMENT = '/api/users/{id}/favorites/{equipmentId}';

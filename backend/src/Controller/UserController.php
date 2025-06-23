@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Equipment;
 use App\Repository\UserRepository;
+use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +23,8 @@ final class UserController extends AbstractController
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
         private SerializerInterface $serializer,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private EquipmentRepository $equipmentRepository
     ) {}
 
     #[Route('/{id}', name: 'app_user_get', methods: ['GET'])]
@@ -120,17 +123,57 @@ final class UserController extends AbstractController
         return $this->json(['message' => 'Utilisateur supprimé avec succès'], Response::HTTP_OK);
     }
 
-    #[Route('/{id}/favorites', name: 'app_user_add_favorite', methods: ['POST'])]
-    public function addFavorite(int $id, Equipment $equipment): JsonResponse
+    #[Route('/{id}/favorites', name: 'app_user_favorites', methods: ['GET'])]
+    public function getFavorites(int $id): JsonResponse
+    {
+        $user = $this->userRepository->find($id);
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $favorites = $user->getFavorites();
+        $favoriteIds = $favorites->map(function ($favorite) {
+            return $favorite->getId();
+        });
+
+        return $this->json($favoriteIds, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/favorites/{equipmentId}', name: 'app_user_add_favorite', methods: ['POST'])]
+    public function addFavorite(int $id, int $equipmentId): JsonResponse
     {
         $user = $this->getUser();
         if (!$user) {
             return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
+        $equipment = $this->equipmentRepository->find($equipmentId);
+        if (!$equipment) {
+            return $this->json(['message' => 'Equipement non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
         $user->addFavorite($equipment);
         $this->entityManager->flush();
         
         return $this->json(['message' => 'Equipement ajouté aux favoris'], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/favorites/{equipmentId}', name: 'app_user_remove_favorite', methods: ['DELETE'])]
+    public function removeFavorite(int $id, int $equipmentId): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $equipment = $this->equipmentRepository->find($equipmentId);
+        if (!$equipment) {
+            return $this->json(['message' => 'Equipement non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user->removeFavorite($equipment);
+        $this->entityManager->flush();
+        
+        return $this->json(['message' => 'Equipement supprimé des favoris'], Response::HTTP_OK);
     }
 }

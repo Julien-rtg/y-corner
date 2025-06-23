@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Equipment } from '@/interfaces/Equipment.interface';
 import { EquipmentService } from '@/services/equipment';
 import { useNavigate } from 'react-router-dom';
+import { Heart, HeartFilled } from '../../../components/icons/Heart';
+import userService from '@/services/user';
+import { toast } from 'sonner';
 
 function Home() {
   const navigate = useNavigate();
@@ -34,7 +37,19 @@ function Home() {
         setLoading(true);
         const equipmentService = new EquipmentService();
         const data = await equipmentService.getAllEquipment();
-        console.log(data);
+        
+        try {
+          const favoriteIds = await userService.getFavorites();
+          
+          // Mark favorite equipment
+          data.forEach(item => {
+            item.isFavorite = favoriteIds.includes(item.id);
+          });
+        } catch (favError) {
+          console.error("Failed to fetch favorites:", favError);
+          // Continue with equipment data even if favorites fail
+        }
+        
         setEquipment(data);
         
         const uniqueCategories = new Set<string>();
@@ -102,6 +117,35 @@ function Home() {
       }
     });
 
+  const handleToggleFavorite = async (e: React.MouseEvent, item: Equipment) => {
+    e.stopPropagation();
+    
+    try {
+      if (item.isFavorite) {
+        await userService.removeFavorite(item.id);
+        toast.success('Retiré des favoris');
+      } else {
+        await userService.addFavorite(item.id);
+        toast.success('Ajouté aux favoris');
+      }
+      
+      // Update local state
+      setEquipment(prevEquipment => {
+        return prevEquipment.map(equip => {
+          if (equip.id === item.id) {
+            return { ...equip, isFavorite: !equip.isFavorite };
+          }
+          return equip;
+        });
+      });
+      
+      // No need to update favorites list as we're using isFavorite property directly
+    } catch (error) {
+      console.error('Erreur lors de la modification des favoris:', error);
+      toast.error('Une erreur est survenue');
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -146,8 +190,18 @@ function Home() {
             {!loading && !error && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredEquipment.map((item) => (
-                  <Card key={item.id} className="flex flex-col" onClick={() => navigate(`/equipment/${item.id}`)}>
-                    <CardHeader className="p-0">
+                  <Card key={item.id} className="flex flex-col relative">
+                    <div 
+                      className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm cursor-pointer"
+                      onClick={(e) => handleToggleFavorite(e, item)}
+                    >
+                      {item.isFavorite ? (
+                        <HeartFilled className="h-5 w-5 text-red-500" />
+                      ) : (
+                        <Heart className="h-5 w-5 text-gray-600 hover:text-red-500" />
+                      )}
+                    </div>
+                    <CardHeader className="p-0" onClick={() => navigate(`/equipment/${item.id}`)}>
                       <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg">
                         {item.images && item.images.length > 0 ? (
                           <img
@@ -162,7 +216,7 @@ function Home() {
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 p-6">
+                    <CardContent className="flex-1 p-6" onClick={() => navigate(`/equipment/${item.id}`)}>
                       <div className="flex items-start justify-between mb-2">
                         <CardTitle className="line-clamp-1">{item.name}</CardTitle>
                         <div className="flex flex-wrap gap-1">
@@ -183,7 +237,7 @@ function Home() {
                         {item.price.toFixed(2)} €
                       </p>
                     </CardContent>
-                    <CardFooter className="p-6 pt-0">
+                    <CardFooter className="p-6 pt-0" onClick={() => navigate(`/equipment/${item.id}`)}>
                       <Button className="w-full" size="lg">
                         Voir l'équipement
                       </Button>
