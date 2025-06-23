@@ -132,11 +132,11 @@ final class UserController extends AbstractController
         }
 
         $favorites = $user->getFavorites();
-        $favoriteIds = $favorites->map(function ($favorite) {
-            return $favorite->getId();
-        });
+        $serializedFavorites = $this->serializer->serialize($favorites, 'json', [
+            'groups' => ['show-equipment']
+        ]);
 
-        return $this->json($favoriteIds, Response::HTTP_OK);
+        return new JsonResponse($serializedFavorites, Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}/favorites/{equipmentId}', name: 'app_user_add_favorite', methods: ['POST'])]

@@ -13,7 +13,6 @@ import { Equipment } from '@/interfaces/Equipment.interface';
 import { useNavigate } from 'react-router-dom';
 import { Heart, HeartFilled } from '@/components/icons/Heart';
 import userService from '@/services/user';
-import { EquipmentService } from '@/services/equipment';
 import { toast } from 'sonner';
 
 function Wishlist() {
@@ -26,27 +25,11 @@ function Wishlist() {
     const fetchFavorites = async () => {
       try {
         setLoading(true);
-        const favoriteIds = await userService.getFavorites();
+        const favoriteEquipments = await userService.getFavorites();
         
-        if (favoriteIds.length === 0) {
-          setFavorites([]);
-          setError(null);
-          setLoading(false);
-          return;
-        }
-        
-        const equipmentService = new EquipmentService();
-        const favoriteEquipments: Equipment[] = [];
-        
-        for (const id of favoriteIds) {
-          try {
-            const equipment = await equipmentService.getEquipment(id.toString());
-            equipment.isFavorite = true;
-            favoriteEquipments.push(equipment);
-          } catch (equipmentError) {
-            console.error(`Failed to fetch equipment ${id}:`, equipmentError);
-          }
-        }
+        favoriteEquipments.forEach(equipment => {
+          equipment.isFavorite = true;
+        });
         
         setFavorites(favoriteEquipments);
         setError(null);

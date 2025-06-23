@@ -1,6 +1,7 @@
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/utils/getToken';
 import { User } from '@/interfaces/User.interface';
+import { Equipment } from '@/interfaces/Equipment.interface';
 import { API_URL_USER_FAVORITES, API_URL_USER_FAVORITE_EQUIPMENT } from '@/constants/api';
 
 export interface UserUpdateData {
@@ -87,7 +88,7 @@ export class UserService {
     }
   }
 
-  async getFavorites(): Promise<number[]> {
+  async getFavorites(): Promise<Equipment[]> {
     try {
       const currentUser = getUser();
       if (!currentUser || !currentUser.id) {
@@ -97,7 +98,7 @@ export class UserService {
       const endpoint = API_URL_USER_FAVORITES.replace('{id}', currentUser.id.toString());
       const token = getToken();
 
-      const data = await api<number[]>(
+      const data = await api<Equipment[]>(
         endpoint,
         {
           method: 'GET',

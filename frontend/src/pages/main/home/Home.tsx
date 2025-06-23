@@ -39,15 +39,14 @@ function Home() {
         const data = await equipmentService.getAllEquipment();
         
         try {
-          const favoriteIds = await userService.getFavorites();
+          const favorites = await userService.getFavorites();
+          const favoriteIds = favorites.map(fav => fav.id);
           
-          // Mark favorite equipment
           data.forEach(item => {
             item.isFavorite = favoriteIds.includes(item.id);
           });
         } catch (favError) {
           console.error("Failed to fetch favorites:", favError);
-          // Continue with equipment data even if favorites fail
         }
         
         setEquipment(data);
