@@ -151,7 +151,7 @@ function Home() {
                       <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg">
                         {item.images && item.images.length > 0 ? (
                           <img
-                            src={item.images[0].content}
+                            src={`${import.meta.env.VITE_API_URL}${item.images[0].content}`}
                             alt={item.name}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                           />
