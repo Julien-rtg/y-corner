@@ -1,7 +1,7 @@
 import { Equipment } from "../interfaces/Equipment.interface";
 import { API_URL_CREATE_EQUIPMENT, API_URL_EQUIPMENT, API_URL_EQUIPMENTS, API_URL_USER_EQUIPMENTS } from "@/constants/api.ts";
 import { api } from "@/lib/api.ts";
-import { getToken } from "@/utils/getToken.ts";
+import { getToken, getUser } from "@/utils/getToken.ts";
 
 export class EquipmentService {
     public async getAllEquipment(): Promise<Equipment[]> {
@@ -106,15 +106,38 @@ export class EquipmentService {
         }
     }
 
-    public async update(id: number): Promise<void> {
+    public async createEquipment(equipmentData: {
+        name: string;
+        price: number;
+        description: string;
+        city: string;
+        categories: any[];
+        images: any[];
+    }): Promise<void> {
         const token = getToken();
+        const user = getUser();
+        
         try {
-            const endpoint = API_URL_EQUIPMENT.replace("{id}", id.toString());
             await api<void>(
-                endpoint,
+                API_URL_CREATE_EQUIPMENT,
                 {
-                    method: "PUT",
-                    headers: { Authorization: `Bearer ${token}` },
+                    method: "POST",
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify([{
+                        name: equipmentData.name,
+                        price: equipmentData.price,
+                        description: equipmentData.description,
+                        city: equipmentData.city,
+                        categories: equipmentData.categories.map(category => ({
+                            id: category.id,
+                            name: category.name
+                        })),
+                        image: equipmentData.images[0].content,
+                        user_id: user?.id
+                    }])
                 },
                 import.meta.env.VITE_API_URL || ""
             );
@@ -122,7 +145,39 @@ export class EquipmentService {
             if (error instanceof Error) {
                 throw error;
             } else {
-                throw new Error("Une erreur inconnue est survenue.");
+                throw new Error("Une erreur inconnue est survenue lors de la création de l'équipement.");
+            }
+        }
+    }
+
+    public async updateEquipment(id: number, equipmentData: {
+        name: string;
+        price: number;
+        description: string;
+        city: string;
+        categories: any[];
+        images: any[];
+    }): Promise<void> {
+        const token = getToken();
+        try {
+            const endpoint = API_URL_EQUIPMENT.replace("{id}", id.toString());
+            await api<void>(
+                endpoint,
+                {
+                    method: "PUT",
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(equipmentData)
+                },
+                import.meta.env.VITE_API_URL || ""
+            );
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                throw new Error("Une erreur inconnue est survenue lors de la mise à jour de l'équipement.");
             }
         }
     }

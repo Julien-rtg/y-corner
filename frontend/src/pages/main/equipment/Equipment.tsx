@@ -4,9 +4,6 @@ import { Category } from '@/interfaces/Category.interface';
 import { Image as ImageInterface } from '@/interfaces/Image.interface';
 import { EquipmentService } from '@/services/equipment';
 import { CategoryService } from '@/services/category';
-import { api } from '@/lib/api';
-import { getToken, getUser } from '@/utils/getToken';
-import { API_URL_CREATE_EQUIPMENT, API_URL_EQUIPMENT } from '@/constants/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -207,56 +204,29 @@ function Equipment() {
     }
 
     setSaving(true);
-    const token = getToken();
-    const user = getUser();
 
     try {
       if (isEditMode) {
-        const endpoint = API_URL_EQUIPMENT.replace('{id}', id!);
-        await api(
-          endpoint,
-          {
-            method: 'PUT',
-            headers: { 
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              name: formData.name,
-              price: formData.price,
-              description: formData.description,
-              city: formData.city,
-              categories: formData.categories,
-              images: formData.images
-            })
-          },
-          import.meta.env.VITE_API_URL || ''
-        );
+        const equipmentService = new EquipmentService();
+        await equipmentService.updateEquipment(parseInt(id!), {
+          name: formData.name,
+          price: formData.price,
+          description: formData.description,
+          city: formData.city,
+          categories: formData.categories,
+          images: formData.images
+        });
         toast.success('Équipement mis à jour avec succès');
       } else {
-        await api(
-          API_URL_CREATE_EQUIPMENT,
-          {
-            method: 'POST',
-            headers: { 
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify([{
-              name: formData.name,
-              price: formData.price,
-              description: formData.description,
-              city: formData.city,
-              categories: formData.categories.map(category => ({
-                id: category.id,
-                name: category.name
-              })),
-              image: formData.images[0].content,
-              user_id: user?.id
-            }])
-          },
-          import.meta.env.VITE_API_URL || ''
-        );
+        const equipmentService = new EquipmentService();
+        await equipmentService.createEquipment({
+          name: formData.name,
+          price: formData.price,
+          description: formData.description,
+          city: formData.city,
+          categories: formData.categories,
+          images: formData.images
+        });
         toast.success('Équipement créé avec succès');
       }
       

@@ -190,35 +190,51 @@ class EquipmentController extends AbstractController
         }
         
         $existingImages = $entityManager->getRepository(Image::class)->findBy(['equipment' => $equipment]);
-        
+        $existingImageIds = [];
         foreach ($existingImages as $existingImage) {
-            $oldImagePath = __DIR__ . '/../../public' . $existingImage->getContent();
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
-            }
-            
-            $entityManager->remove($existingImage);
+            $existingImageIds[$existingImage->getId()] = $existingImage;
         }
         
-        $newImages = [];
+        $receivedImages = [];
+        $newImagesToAdd = [];
         
         if (isset($data['image']) && !empty($data['image'])) {
-            $newImages[] = $data['image'];
+            $newImagesToAdd[] = $data['image'];
         }
         else if (isset($data['images']) && is_array($data['images']) && !empty($data['images'])) {
             foreach ($data['images'] as $imageData) {
-                if (isset($imageData['content']) && !empty($imageData['content'])) {
-                    $newImages[] = $imageData['content'];
+                if (isset($imageData['content']) && !empty($imageData['content']) && 
+                    strpos($imageData['content'], 'data:image') === 0) {
+                    $newImagesToAdd[] = $imageData['content'];
+                }
+                else if (isset($imageData['id']) && is_numeric($imageData['id']) && $imageData['id'] > 0) {
+                    if (array_key_exists($imageData['id'], $existingImageIds)) {
+                        $receivedImages[] = $imageData['id'];
+                    }
                 }
             }
         }
         
-        foreach ($newImages as $imageContent) {
-            $newImagePath = $this->saveBase64Image($imageContent);
-            $image = new Image();
-            $image->setContent($newImagePath);
-            $image->setEquipment($equipment);
-            $entityManager->persist($image);
+        foreach ($existingImageIds as $id => $existingImage) {
+            if (!in_array($id, $receivedImages)) {
+                $oldImagePath = __DIR__ . '/../../public' . $existingImage->getContent();
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+                $entityManager->remove($existingImage);
+            }
+        }
+        
+        foreach ($newImagesToAdd as $imageContent) {
+            try {
+                $newImagePath = $this->saveBase64Image($imageContent);
+                $image = new Image();
+                $image->setContent($newImagePath);
+                $image->setEquipment($equipment);
+                $entityManager->persist($image);
+            } catch (\Exception $e) {
+                return new JsonResponse(['message' => 'Format d\'image invalide: ' . $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            }
         }
         
         
