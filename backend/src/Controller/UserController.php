@@ -24,9 +24,6 @@ final class UserController extends AbstractController
         private UserPasswordHasherInterface $passwordHasher
     ) {}
 
-    /**
-     * Récupérer les détails d'un utilisateur
-     */
     #[Route('/{id}', name: 'app_user_get', methods: ['GET'])]
     public function getUserDetails(int $id): JsonResponse
     {
@@ -45,9 +42,6 @@ final class UserController extends AbstractController
         return new JsonResponse($userData, Response::HTTP_OK, [], true);
     }
 
-    /**
-     * Mettre à jour les informations d'un utilisateur
-     */
     #[Route('/{id}', name: 'app_user_update', methods: ['PUT', 'PATCH'])]
     public function updateUser(Request $request, int $id): JsonResponse
     {
@@ -107,9 +101,6 @@ final class UserController extends AbstractController
         return new JsonResponse($userData, Response::HTTP_OK, [], true);
     }
 
-    /**
-     * Supprimer un utilisateur
-     */
     #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
     public function deleteUser(int $id): JsonResponse
     {
@@ -127,5 +118,19 @@ final class UserController extends AbstractController
         $this->entityManager->flush();
         
         return $this->json(['message' => 'Utilisateur supprimé avec succès'], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/favorites', name: 'app_user_add_favorite', methods: ['POST'])]
+    public function addFavorite(int $id, Equipment $equipment): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user->addFavorite($equipment);
+        $this->entityManager->flush();
+        
+        return $this->json(['message' => 'Equipement ajouté aux favoris'], Response::HTTP_OK);
     }
 }

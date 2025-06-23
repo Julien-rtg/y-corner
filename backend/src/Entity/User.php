@@ -81,9 +81,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Equipment::class, mappedBy: 'user')]
     private Collection $equipment;
 
+    /**
+     * @var Collection<int, Equipment>
+     */
+    #[ORM\ManyToMany(targetEntity: Equipment::class, inversedBy: 'favoritedBy')]
+    private Collection $favorites;
+
     public function __construct()
     {
         $this->equipment = new ArrayCollection();
+        $this->favorites = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -308,6 +315,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $equipment->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Equipment>
+     */
+    public function getFavorites(): Collection
+    {
+        return $this->favorites;
+    }
+
+    public function addFavorite(Equipment $favorite): static
+    {
+        if (!$this->favorites->contains($favorite)) {
+            $this->favorites->add($favorite);
+        }
+
+        return $this;
+    }
+
+    public function removeFavorite(Equipment $favorite): static
+    {
+        $this->favorites->removeElement($favorite);
 
         return $this;
     }
