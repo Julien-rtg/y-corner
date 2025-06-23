@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MapPin, MessageCircle, X } from "lucide-react";
-import { getToken } from "@/utils/getToken";
-import { api } from "@/lib/api";
-import { API_URL_EQUIPMENT } from "@/constants/api";
 import { useParams, useNavigate } from "react-router-dom";
 import Chat from "@/components/chat/Chat";
 import { Equipment as EquipmentInterface } from "@/interfaces/Equipment.interface";
@@ -11,42 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUser } from "@/utils/getToken";
 import Sidebar from "@/components/sidebar/Sidebar";
-
-async function getEquipment(id: string): Promise<EquipmentInterface> {
-	const token = getToken();
-
-	try {
-		const endpoint = API_URL_EQUIPMENT.replace("{id}", id);
-
-		const data = await api<EquipmentInterface>(
-			endpoint,
-			{
-				method: "GET",
-				headers: { Authorization: `Bearer ${token}` },
-			},
-			import.meta.env.VITE_API_URL || ""
-		);
-
-		if (!data) {
-			throw new Error("Réponse invalide du serveur : equipment manquant.");
-		}
-
-		return data;
-	} catch (error) {
-		if (error instanceof Error) {
-			throw error;
-		} else {
-			throw new Error("Une erreur inconnue est survenue.");
-		}
-	}
-}
+import { EquipmentService } from "@/services/equipment";
+import userService from "@/services/user";
+import { toast } from "sonner";
+import { HeartFilled } from "@/components/icons/Heart";
 
 function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) {
+	const equipmentService = new EquipmentService();
 	const [equipment, setEquipment] = useState<EquipmentInterface | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 	const [isFloatingChatOpen, setIsFloatingChatOpen] = useState(false);
+	const [isFavorite, setIsFavorite] = useState(false);
+	const [favoriteLoading, setFavoriteLoading] = useState(false);
 	const params = useParams();
 	const user = getUser();
 	const navigate = useNavigate();
@@ -55,8 +30,19 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 		const fetchEquipment = async () => {
 			try {
 				setLoading(true);
-				const data = await getEquipment(params.id as string);
+				const data = await equipmentService.getEquipment(params.id as string);
 				setEquipment(data);
+				
+				try {
+					if (user) {
+						const favorites = await userService.getFavorites();
+						const isInFavorites = favorites.some(fav => fav.id === parseInt(params.id as string));
+						setIsFavorite(isInFavorites);
+					}
+				} catch (favError) {
+					console.error("Erreur lors de la vérification des favoris:", favError);
+				}
+				
 				setLoading(false);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Une erreur est survenue");
@@ -73,6 +59,34 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 
 	const handleGoBack = () => {
 		navigate(-1);
+	};
+	
+	const handleToggleFavorite = async () => {
+		if (!user) {
+			toast.error("Vous devez être connecté pour ajouter un article aux favoris");
+			return;
+		}
+		
+		if (!equipment) return;
+		
+		try {
+			setFavoriteLoading(true);
+			
+			if (isFavorite) {
+				await userService.removeFavorite(equipment.id);
+				setIsFavorite(false);
+				toast.success("Article retiré des favoris");
+			} else {
+				await userService.addFavorite(equipment.id);
+				setIsFavorite(true);
+				toast.success("Article ajouté aux favoris");
+			}
+		} catch (err) {
+			toast.error("Une erreur est survenue lors de la modification des favoris");
+			console.error("Erreur de favoris:", err);
+		} finally {
+			setFavoriteLoading(false);
+		}
 	};
 
 	if (error) {
@@ -220,10 +234,20 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 									<Button
 										variant="outline"
 										className="flex-1 py-6"
-										onClick={() => alert('Produit ajouté aux favoris')}
+										onClick={handleToggleFavorite}
+										disabled={favoriteLoading}
 									>
-										<Heart className="mr-2 h-5 w-5" />
-										<span className="font-medium">Ajouter aux favoris</span>
+										{isFavorite ? (
+											<>
+												<HeartFilled className="mr-2 h-5 w-5 text-red-500" />
+												<span className="font-medium">Retirer des favoris</span>
+											</>
+										) : (
+											<>
+												<Heart className="mr-2 h-5 w-5" />
+												<span className="font-medium">Ajouter aux favoris</span>
+											</>
+										)}
 									</Button>
 									<Button
 										variant="default"
