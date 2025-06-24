@@ -176,4 +176,58 @@ final class UserController extends AbstractController
         
         return $this->json(['message' => 'Equipement supprimé des favoris'], Response::HTTP_OK);
     }
+
+    #[Route('/{id}/favorite-categories/{categoryId}', name: 'app_user_add_favorite_category', methods: ['POST'])]
+    public function addFavoriteCategory(int $id, int $categoryId): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $category = $this->categoryRepository->find($categoryId);
+        if (!$category) {
+            return $this->json(['message' => 'Catégorie non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user->addFavoriteCategory($category);
+        $this->entityManager->flush();
+        
+        return $this->json(['message' => 'Catégorie ajoutée aux favoris'], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/favorite-categories/{categoryId}', name: 'app_user_remove_favorite_category', methods: ['DELETE'])]
+    public function removeFavoriteCategory(int $id, int $categoryId): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $category = $this->categoryRepository->find($categoryId);
+        if (!$category) {
+            return $this->json(['message' => 'Catégorie non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user->removeFavoriteCategory($category);
+        $this->entityManager->flush();
+        
+        return $this->json(['message' => 'Catégorie supprimée des favoris'], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/favorite-categories', name: 'app_user_favorites_categories', methods: ['GET'])]
+    public function getUserFavoriteCategories(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $favoriteCategories = $user->getFavoriteCategories();
+        $serializedFavoriteCategories = $this->serializer->serialize($favoriteCategories, 'json', [
+            'groups' => ['show-category']
+        ]);
+
+        return new JsonResponse($serializedFavoriteCategories, Response::HTTP_OK, [], true);
+    }
 }

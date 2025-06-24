@@ -87,10 +87,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Equipment::class, inversedBy: 'favoritedBy')]
     private Collection $favorites;
 
+    /**
+     * @var Collection<int, Category>
+     */
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'favoritedBy')]
+    private Collection $favoriteCategories;
+
     public function __construct()
     {
         $this->equipment = new ArrayCollection();
         $this->favorites = new ArrayCollection();
+        $this->favoriteCategories = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -339,6 +346,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeFavorite(Equipment $favorite): static
     {
         $this->favorites->removeElement($favorite);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getFavoriteCategories(): Collection
+    {
+        return $this->favoriteCategories;
+    }
+
+    public function addFavoriteCategory(Category $favoriteCategory): static
+    {
+        if (!$this->favoriteCategories->contains($favoriteCategory)) {
+            $this->favoriteCategories->add($favoriteCategory);
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteCategory(Category $favoriteCategory): static
+    {
+        $this->favoriteCategories->removeElement($favoriteCategory);
 
         return $this;
     }
