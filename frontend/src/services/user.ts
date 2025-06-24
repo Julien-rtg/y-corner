@@ -2,7 +2,13 @@ import { api } from '@/lib/api';
 import { getToken, getUser } from '@/utils/getToken';
 import { User } from '@/interfaces/User.interface';
 import { Equipment } from '@/interfaces/Equipment.interface';
-import { API_URL_USER_FAVORITES, API_URL_USER_FAVORITE_EQUIPMENT } from '@/constants/api';
+import { Category } from '@/interfaces/Category.interface';
+import { 
+  API_URL_USER_FAVORITES, 
+  API_URL_USER_FAVORITE_EQUIPMENT,
+  API_URL_USER_FAVORITE_CATEGORIES,
+  API_URL_USER_FAVORITE_CATEGORY
+} from '@/constants/api';
 
 export interface UserUpdateData {
   firstName?: string;
@@ -166,6 +172,87 @@ export class UserService {
       );
     } catch (error) {
       console.error('Erreur lors de la suppression du favori:', error);
+      throw error;
+    }
+  }
+
+  async getFavoriteCategories(): Promise<Category[]> {
+    try {
+      const currentUser = getUser();
+      if (!currentUser || !currentUser.id) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const endpoint = API_URL_USER_FAVORITE_CATEGORIES.replace('{id}', currentUser.id.toString());
+      const token = getToken();
+
+      const data = await api<Category[]>(
+        endpoint,
+        {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+        this.apiUrl
+      );
+
+      return data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des catégories favorites:', error);
+      throw error;
+    }
+  }
+
+  async addFavoriteCategory(categoryId: number): Promise<void> {
+    try {
+      const currentUser = getUser();
+      if (!currentUser || !currentUser.id) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const endpoint = API_URL_USER_FAVORITE_CATEGORY
+        .replace('{id}', currentUser.id.toString())
+        .replace('{categoryId}', categoryId.toString());
+      const token = getToken();
+
+      await api<void>(
+        endpoint,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          },
+        },
+        this.apiUrl
+      );
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout de la catégorie aux favoris:', error);
+      throw error;
+    }
+  }
+
+  async removeFavoriteCategory(categoryId: number): Promise<void> {
+    try {
+      const currentUser = getUser();
+      if (!currentUser || !currentUser.id) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const endpoint = API_URL_USER_FAVORITE_CATEGORY
+        .replace('{id}', currentUser.id.toString())
+        .replace('{categoryId}', categoryId.toString());
+      const token = getToken();
+
+      await api<void>(
+        endpoint,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+        this.apiUrl
+      );
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la catégorie des favoris:', error);
       throw error;
     }
   }

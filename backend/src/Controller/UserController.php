@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Equipment;
+use App\Entity\Category;
 use App\Repository\UserRepository;
 use App\Repository\EquipmentRepository;
+use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,7 +26,8 @@ final class UserController extends AbstractController
         private UserRepository $userRepository,
         private SerializerInterface $serializer,
         private UserPasswordHasherInterface $passwordHasher,
-        private EquipmentRepository $equipmentRepository
+        private EquipmentRepository $equipmentRepository,
+        private CategoryRepository $categoryRepository
     ) {}
 
     #[Route('/{id}', name: 'app_user_get', methods: ['GET'])]

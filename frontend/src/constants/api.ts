@@ -8,3 +8,5 @@ export const API_URL_USER_EQUIPMENTS = '/api/user/equipments';
 export const API_URL_CATEGORIES = '/api/categories';
 export const API_URL_USER_FAVORITES = '/api/users/{id}/favorites';
 export const API_URL_USER_FAVORITE_EQUIPMENT = '/api/users/{id}/favorites/{equipmentId}';
+export const API_URL_USER_FAVORITE_CATEGORIES = '/api/users/{id}/favorite-categories';
+export const API_URL_USER_FAVORITE_CATEGORY = '/api/users/{id}/favorite-categories/{categoryId}';
