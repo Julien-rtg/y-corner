@@ -1,4 +1,5 @@
 import { Search, Filter, ArrowUpDown, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -49,7 +50,6 @@ export default function Filters({
 }: FiltersProps) {
   return (
     <div className="flex flex-col gap-6">
-      {/* Search and Basic Filters Row */}
       <div className="flex flex-col md:flex-row gap-4">
         {/* Search Input */}
         <div className="relative flex-1">
@@ -110,7 +110,6 @@ export default function Filters({
         </DropdownMenu>
       </div>
       
-      {/* Advanced Filters Row */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Price Range Filter */}
         <div className="flex-1 space-y-2">  
@@ -119,13 +118,13 @@ export default function Filters({
             <div className="flex-1">
               <Label className="text-xs text-muted-foreground mb-1">Min</Label>
               <Input
-                type="number"
-                min={0}
-                max={priceRange[1]}
-                value={priceRange[0]}
+                type="text"
+                value={priceRange[0].toString()}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  if (!isNaN(value) && value >= 0 && value <= priceRange[1]) {
+                  const inputValue = e.target.value;
+                  // Autoriser uniquement les chiffres ou une chaîne vide
+                  if (inputValue === '' || /^\d+$/.test(inputValue)) {
+                    const value = inputValue === '' ? 0 : parseInt(inputValue);
                     setPriceRange([value, priceRange[1]]);
                   }
                 }}
@@ -139,13 +138,13 @@ export default function Filters({
             <div className="flex-1">
               <Label className="text-xs text-muted-foreground mb-1">Max</Label>
               <Input
-                type="number"
-                min={priceRange[0]}
-                max={maxPrice}
-                value={priceRange[1]}
+                type="text"
+                value={priceRange[1].toString()}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  if (!isNaN(value) && value >= priceRange[0] && value <= maxPrice) {
+                  const inputValue = e.target.value;
+                  // Autoriser uniquement les chiffres ou une chaîne vide
+                  if (inputValue === '' || /^\d+$/.test(inputValue)) {
+                    const value = inputValue === '' ? 0 : parseInt(inputValue);
                     setPriceRange([priceRange[0], value]);
                   }
                 }}

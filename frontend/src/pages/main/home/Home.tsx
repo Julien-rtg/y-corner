@@ -128,7 +128,6 @@ function Home() {
         toast.success('Ajouté aux favoris');
       }
       
-      // Update local state
       setEquipment(prevEquipment => {
         return prevEquipment.map(equip => {
           if (equip.id === item.id) {
@@ -138,7 +137,6 @@ function Home() {
         });
       });
       
-      // No need to update favorites list as we're using isFavorite property directly
     } catch (error) {
       console.error('Erreur lors de la modification des favoris:', error);
       toast.error('Une erreur est survenue');
