@@ -1,5 +1,4 @@
 import { Search, Filter, ArrowUpDown, MapPin } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -27,7 +26,6 @@ interface FiltersProps {
   setSortBy: (value: "name_asc" | "name_desc" | "price_asc" | "price_desc") => void;
   priceRange: [number, number];
   setPriceRange: (value: [number, number]) => void;
-  maxPrice: number;
   selectedLocation: string;
   setSelectedLocation: (value: string) => void;
   locations: string[];
@@ -43,7 +41,6 @@ export default function Filters({
   setSortBy,
   priceRange,
   setPriceRange,
-  maxPrice,
   selectedLocation,
   setSelectedLocation,
   locations,
