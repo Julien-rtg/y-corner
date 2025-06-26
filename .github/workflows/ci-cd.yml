@@ -42,7 +42,7 @@ jobs:
       - name: Install backend dependencies (Symfony)
         env:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
-          MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+          MONGODB_URL: "mongodb+srv://admin:admin@cluster0.bfb0y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
           MONGODB_DB: ycorner-chat
         run: |
           cd backend
