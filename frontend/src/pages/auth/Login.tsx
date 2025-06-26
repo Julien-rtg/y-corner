@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 
 const loginSchema = z.object({
     email: z.string().email('Please enter a valid email'),

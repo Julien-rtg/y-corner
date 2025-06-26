@@ -4,7 +4,7 @@ import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import ResetPassword from '@/pages/auth/ResetPassword';
 import { useEffect, useState, createContext } from 'react';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 import EquipmentDetail from "@/pages/main/equipment-detail/Equipment-detail";
 import Home from "@/pages/main/home/Home";
 import ChatPage from "@/pages/main/chat/ChatPage";

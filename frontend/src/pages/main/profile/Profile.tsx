@@ -3,7 +3,7 @@ import { User } from '@/interfaces/User.interface';
 import { getUser } from '@/utils/getToken';
 import userService, { UserUpdateData } from '@/services/user';
 import { toast } from 'sonner';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/sidebar/Sidebar';
 

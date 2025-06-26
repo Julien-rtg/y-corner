@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
