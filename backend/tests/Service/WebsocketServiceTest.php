@@ -5,43 +5,10 @@ namespace App\Tests\Service;
 use App\Document\ChatMessage;
 use App\Service\MongoDBService;
 use App\Service\WebsocketService;
+use App\Tests\TestConnection;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
 use Psr\Http\Message\RequestInterface;
-
-/**
- * Custom test connection class that implements ConnectionInterface
- * and allows setting properties without deprecation warnings
- */
-class TestConnection implements ConnectionInterface
-{
-    public $userId;
-    public $httpRequest;
-    private $sendCallback;
-    
-    public function __construct($userId = null, $httpRequest = null)
-    {   
-        $this->userId = $userId;
-        $this->httpRequest = $httpRequest;
-    }
-    
-    public function setSendCallback(callable $callback)
-    {   
-        $this->sendCallback = $callback;
-    }
-    
-    public function send($data)
-    {
-        if ($this->sendCallback) {
-            call_user_func($this->sendCallback, $data);
-        }
-        return $this;
-    }
-    
-    public function close() {}
-    
-    public function getRemoteAddress() { return '127.0.0.1'; }
-}
 
 class WebsocketServiceTest extends TestCase
 {
