@@ -27,7 +27,6 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [maxPrice, setMaxPrice] = useState(1000);
   const [locations, setLocations] = useState<string[]>(["All"]);
   const [selectedLocation, setSelectedLocation] = useState("All");
 
@@ -74,7 +73,6 @@ function Home() {
         
         setCategories(Array.from(uniqueCategories));
         setLocations(Array.from(uniqueLocations));
-        setMaxPrice(Math.ceil(highestPrice / 100) * 100);
         setPriceRange([0, Math.ceil(highestPrice / 100) * 100]);
         setError(null);
       } catch (err) {
@@ -163,7 +161,6 @@ function Home() {
               setSortBy={setSortBy}
               priceRange={priceRange}
               setPriceRange={setPriceRange}
-              maxPrice={maxPrice}
               selectedLocation={selectedLocation}
               setSelectedLocation={setSelectedLocation}
               locations={locations}

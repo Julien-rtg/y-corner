@@ -1,10 +1,23 @@
 import axios from 'axios';
 
+function getApiUrl(): string {
+    try {
+        return process.env.VITE_API_URL as string;
+    } catch (error) {
+        return 'http://localhost:8000';
+    }
+}
+
 export class AuthentificationService {
+    private apiUrl: string;
+    
+    constructor(apiUrl?: string) {
+        this.apiUrl = apiUrl || getApiUrl();
+    }
 
     public async login(username: string, password: string): Promise<any> {
         try {
-            return axios.post(`${import.meta.env.VITE_API_URL}/api/login_check`, {
+            return axios.post(`${this.apiUrl}/api/login_check`, {
                 username: username,
                 password: password
             })
@@ -32,14 +45,12 @@ export class AuthentificationService {
         postalCode?: string;
     }): Promise<any> {
         try {
-            // Préparer les données pour le format attendu par le backend
             const registerData = {
                 ...userData,
-                country: userData.country || 'France' // Valeur par défaut si non fournie
+                country: userData.country || 'France'
             };
             
-            // Appel à l'API d'inscription
-            return axios.post(`${import.meta.env.VITE_API_URL}/api/register`, registerData);
+            return axios.post(`${this.apiUrl}/api/register`, registerData);
         }
         catch (error) {
             throw error;
@@ -58,7 +69,7 @@ export class AuthentificationService {
             return false;
         }
         try {
-            return axios.post(`${import.meta.env.VITE_API_URL}/api/token/refresh`, {
+            return axios.post(`${this.apiUrl}/api/token/refresh`, {
                 refresh_token: localStorage.getItem("refresh_token")
             })
                 .then(function (response) {
