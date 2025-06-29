@@ -1,24 +1,13 @@
-when@prod:
-    sentry:
-        dsn: '%env(SENTRY_DSN)%'
-        options:
-            # Add request headers, cookies, IP address and the authenticated user
-            # see https://docs.sentry.io/platforms/php/data-management/data-collected/ for more info
-            # send_default_pii: true
-            ignore_exceptions:
-                - 'Symfony\Component\ErrorHandler\Error\FatalError'
-                - 'Symfony\Component\Debug\Exception\FatalErrorException'
+sentry:
+    dsn: '%env(SENTRY_DSN)%'
+    options:
+        environment: 'dev'
+        release: '1.0.0'
+        http_timeout: 10
+        http_connect_timeout: 10
+        http_ssl_verify_peer: false
+        transport: 'http'
+        traces_sample_rate: 1.0
 
-#        If you are using Monolog, you also need this additional configuration to log the errors correctly:
-#        https://docs.sentry.io/platforms/php/guides/symfony/#monolog-integration
-#        register_error_listener: false
-#        register_error_handler: false
-
-#    monolog:
-#        handlers:
-#            sentry:
-#                type: sentry
-#                level: !php/const Monolog\Logger::ERROR
-#                hub_id: Sentry\State\HubInterface
-#                fill_extra_context: true # Enables sending monolog context to Sentry
-#                process_psr_3_messages: false # Disables the resolution of PSR-3 placeholders
+    register_error_listener: true
+    register_error_handler: true

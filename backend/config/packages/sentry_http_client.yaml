@@ -1,0 +1,7 @@
+services:
+    sentry.http_client:
+        class: Symfony\Component\HttpClient\CurlHttpClient
+        arguments:
+            - verify_peer: false
+              verify_host: false
+              timeout: 5.0

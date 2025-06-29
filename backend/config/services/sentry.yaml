@@ -1,0 +1,8 @@
+services:
+    # Custom Sentry service
+    App\Service\SentryService:
+        public: true
+        autowire: true
+        autoconfigure: true
+        calls:
+            - [getClient, []]
