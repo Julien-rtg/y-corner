@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\Equipment;
 use App\Entity\Image;
 use App\Entity\User;
+use App\Service\SentryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,97 +20,137 @@ use Symfony\Component\Serializer\SerializerInterface;
 class EquipmentController extends AbstractController
 {
     private SerializerInterface $serializer;
+    private SentryService $sentryService;
 
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(SerializerInterface $serializer, SentryService $sentryService)
     {
         $this->serializer = $serializer;
+        $this->sentryService = $sentryService;
     }
 
+    private function executeWithErrorHandling(callable $callback, array $context = []): JsonResponse
+    {
+        try {
+            return $callback();
+        } catch (\Throwable $exception) {
+            $context['controller'] = static::class;
+            $context['method'] = debug_backtrace()[1]['function'] ?? 'unknown';
+            
+            $this->sentryService->captureException($exception, $context);
+            
+            if ($exception instanceof \InvalidArgumentException) {
+                return new JsonResponse(['message' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+            }
+            
+            return new JsonResponse(['message' => 'Une erreur est survenue'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     #[Route('/api/equipments', name: 'app_equipment', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): JsonResponse
     {
-        $data = $entityManager->getRepository(Equipment::class)->findAll();
-        $equipment = $this->serializer->serialize($data, 'json', [
-            'groups' => 'show-equipment',
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                return $object->getId();
-            }
-        ]);
-        return new JsonResponse($equipment, Response::HTTP_OK, [], true);
+        return $this->executeWithErrorHandling(function() use ($entityManager) {
+            $data = $entityManager->getRepository(Equipment::class)->findAll();
+            $equipment = $this->serializer->serialize($data, 'json', [
+                'groups' => 'show-equipment',
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+            
+            return new JsonResponse($equipment, Response::HTTP_OK, [], true);
+        });
     }
 
     #[Route('/api/equipment/{id}', name: 'app_equipment_show', methods: ['GET'])]
     public function show(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
-        $data = $entityManager->getRepository(Equipment::class)->find($id);
-        $equipment = $this->serializer->serialize($data, 'json', [
-            'groups' => 'show-equipment',
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                return $object->getId();
+        return $this->executeWithErrorHandling(function() use ($id, $entityManager) {
+            $data = $entityManager->getRepository(Equipment::class)->find($id);
+            
+            if (!$data) {
+                return new JsonResponse(['message' => 'Équipement non trouvé'], Response::HTTP_NOT_FOUND);
             }
-        ]);
-        return new JsonResponse($equipment, Response::HTTP_OK, [], true);
+            
+            $equipment = $this->serializer->serialize($data, 'json', [
+                'groups' => 'show-equipment',
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+            return new JsonResponse($equipment, Response::HTTP_OK, [], true);
+        }, ['equipment_id' => $id]);
     }
 
     #[Route('/api/equipment', name: 'app_equipment_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $datas = json_decode($request->getContent(), true);
-        $responseData = [];
-        
-        foreach ($datas as $data) {
-            $imageData = $data['image'];
-            $imagePath = $this->saveBase64Image($imageData);
+        return $this->executeWithErrorHandling(function() use ($request, $entityManager) {
+            $datas = json_decode($request->getContent(), true);
+            if (!$datas || !is_array($datas)) {
+                throw new \InvalidArgumentException('Données invalides');
+            }
             
-            $equipment = new Equipment();
-            $equipment->setName($data['name']);
-            $equipment->setCity($data['city']);
-            $equipment->setPrice($data['price']);
-            $equipment->setDescription($data['description']);
+            $responseData = [];
             
-            if (isset($data['categories']) && is_array($data['categories'])) {
-                foreach ($data['categories'] as $categoryData) {
-                    $categoryId = $categoryData['id'] ?? null;
-                    $categoryName = $categoryData['name'] ?? '';
-                    
-                    if ($categoryId > 0) {
-                        $category = $entityManager->getRepository(Category::class)->find($categoryId);
-                        if ($category) {
+            foreach ($datas as $data) {
+                if (!isset($data['image'])) {
+                    throw new \InvalidArgumentException('Image requise pour chaque équipement');
+                }
+                
+                $imageData = $data['image'];
+                $imagePath = $this->saveBase64Image($imageData);
+                
+                $equipment = new Equipment();
+                $equipment->setName($data['name'] ?? '');
+                $equipment->setCity($data['city'] ?? '');
+                $equipment->setPrice($data['price'] ?? 0);
+                $equipment->setDescription($data['description'] ?? '');
+                
+                if (isset($data['categories']) && is_array($data['categories'])) {
+                    foreach ($data['categories'] as $categoryData) {
+                        $categoryId = $categoryData['id'] ?? null;
+                        $categoryName = $categoryData['name'] ?? '';
+                        
+                        if ($categoryId > 0) {
+                            $category = $entityManager->getRepository(Category::class)->find($categoryId);
+                            if ($category) {
+                                $equipment->addCategory($category);
+                            }
+                        } elseif (!empty($categoryName)) {
+                            $category = new Category();
+                            $category->setName($categoryName);
+                            $entityManager->persist($category);
                             $equipment->addCategory($category);
                         }
-                    } elseif (!empty($categoryName)) {
-                        $category = new Category();
-                        $category->setName($categoryName);
-                        $entityManager->persist($category);
-                        $equipment->addCategory($category);
                     }
                 }
-            }
 
-            if (isset($data['user_id'])) {
-                $user = $entityManager->getRepository(User::class)->find($data['user_id']);
-                if ($user) {
-                    $equipment->setUser($user);
+                if (isset($data['user_id'])) {
+                    $user = $entityManager->getRepository(User::class)->find($data['user_id']);
+                    if ($user) {
+                        $equipment->setUser($user);
+                    }
                 }
+                
+                $entityManager->persist($equipment);
+                
+                $image = new Image();
+                $image->setContent($imagePath);
+                $image->setEquipment($equipment);
+                $entityManager->persist($image);
+                
+                $responseData[] = [
+                    'id' => $equipment->getId(),
+                    'name' => $equipment->getName(),
+                    'image_path' => $imagePath
+                ];
             }
             
-            $entityManager->persist($equipment);
-            
-            $image = new Image();
-            $image->setContent($imagePath);
-            $image->setEquipment($equipment);
-            $entityManager->persist($image);
-            
-            $responseData[] = [
-                'id' => $equipment->getId(),
-                'name' => $equipment->getName(),
-                'image_path' => $imagePath
-            ];
-        }
-        
-        $entityManager->flush();
+            $entityManager->flush();
 
-        return $this->json($responseData);
+            return $this->json($responseData);
+        }, ['request_data' => json_decode($request->getContent(), true)]);
     }
     
     private function saveBase64Image(string $base64Image): string
@@ -118,15 +159,23 @@ class EquipmentController extends AbstractController
             $imageType = $matches[1];
             $imageData = base64_decode($matches[2]);
             
+            if ($imageData === false) {
+                throw new \InvalidArgumentException('Données d\'image invalides');
+            }
+            
             $uploadDir = __DIR__ . '/../../public/images/';
             if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+                if (!mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+                    throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+                }
             }
             
             $filename = uniqid() . '.' . $imageType;
             $filePath = $uploadDir . $filename;
             
-            file_put_contents($filePath, $imageData);
+            if (file_put_contents($filePath, $imageData) === false) {
+                throw new \RuntimeException('Impossible d\'enregistrer l\'image');
+            }
             
             return '/images/' . $filename;
         }
@@ -283,18 +332,20 @@ class EquipmentController extends AbstractController
     #[Route('/api/user/equipments', name: 'app_user_equipments', methods: ['GET'])]
     public function getUserEquipments(#[CurrentUser] ?User $user, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$user) {
-            return new JsonResponse(['message' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
-        }
-        
-        $data = $entityManager->getRepository(Equipment::class)->findByUser($user);
-        $equipments = $this->serializer->serialize($data, 'json', [
-            'groups' => 'show-equipment',
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                return $object->getId();
+        return $this->executeWithErrorHandling(function() use ($user, $entityManager) {
+            if (!$user) {
+                return new JsonResponse(['message' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
             }
-        ]);
-        
-        return new JsonResponse($equipments, Response::HTTP_OK, [], true);
+            
+            $data = $entityManager->getRepository(Equipment::class)->findByUser($user);
+            $equipments = $this->serializer->serialize($data, 'json', [
+                'groups' => 'show-equipment',
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+            
+            return new JsonResponse($equipments, Response::HTTP_OK, [], true);
+        }, ['user_id' => $user ? $user->getId() : null]);
     }
 }

@@ -1,0 +1,13 @@
+sentry:
+    dsn: '%env(SENTRY_DSN)%'
+    options:
+        environment: 'dev'
+        release: '1.0.0'
+        http_timeout: 10
+        http_connect_timeout: 10
+        http_ssl_verify_peer: false
+        transport: 'http'
+        traces_sample_rate: 1.0
+
+    register_error_listener: true
+    register_error_handler: true

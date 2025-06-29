@@ -16,6 +16,7 @@ import MyEquipments from './pages/main/my-equipments/MyEquipments';
 import Equipment from './pages/main/equipment/Equipment';
 import Wishlist from './pages/main/wishlist/Wishlist';
 import Contact from './pages/main/contact/Contact';
+import { init } from "@sentry/react";
 
 export const UnreadMessagesContext = createContext<{
   unreadCount: number;
@@ -32,6 +33,12 @@ function App() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const user = getUser();
+
+  init({
+    dsn: "https://1c46eed707732f6f424bb03f7fe9903d@o4509558456385536.ingest.de.sentry.io/4509558458286160",
+    tracesSampleRate: 1.0,
+    sendDefaultPii: true
+  });
 
   const WS_URL = user && user.id ? import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString()) : '';
 
