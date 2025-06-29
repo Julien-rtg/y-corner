@@ -147,7 +147,6 @@ function Home() {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <main className="flex-1 p-8">
-        <button onClick={() => {throw new Error("This is your fourth error!");}}>Break the world</button>
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
