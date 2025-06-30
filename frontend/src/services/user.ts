@@ -9,6 +9,7 @@ import {
   API_URL_USER_FAVORITE_CATEGORIES,
   API_URL_USER_FAVORITE_CATEGORY
 } from '@/constants/api';
+import * as Sentry from '@sentry/react';
 
 export interface UserUpdateData {
   firstName?: string;
@@ -46,6 +47,19 @@ export class UserService {
       return data;
     } catch (error) {
       console.error('Erreur lors de la récupération des détails utilisateur:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'getUserDetails',
+          endpoint: `/api/users/${userId}`
+        },
+        extra: {
+          userId: userId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -71,6 +85,30 @@ export class UserService {
       return data;
     } catch (error) {
       console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'updateUser',
+          endpoint: `/api/users/${userId}`
+        },
+        extra: {
+          userId: userId,
+          userData: JSON.stringify({
+            hasFirstName: !!userData.firstName,
+            hasLastName: !!userData.lastName,
+            hasEmail: !!userData.email,
+            hasAddress: !!userData.address,
+            hasCity: !!userData.city,
+            hasCountry: !!userData.country,
+            hasPostalCode: !!userData.postalCode,
+            hasBirthDate: !!userData.birthDate,
+            hasPassword: !!userData.password
+          }),
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -90,6 +128,19 @@ export class UserService {
       );
     } catch (error) {
       console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'deleteUser',
+          endpoint: `/api/users/${userId}`
+        },
+        extra: {
+          userId: userId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -116,6 +167,19 @@ export class UserService {
       return data;
     } catch (error) {
       console.error('Erreur lors de la récupération des favoris:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'getFavorites',
+          endpoint: API_URL_USER_FAVORITES
+        },
+        extra: {
+          userId: getUser()?.id,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -146,6 +210,20 @@ export class UserService {
       );
     } catch (error) {
       console.error('Erreur lors de l\'ajout aux favoris:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'addFavorite',
+          endpoint: API_URL_USER_FAVORITE_EQUIPMENT
+        },
+        extra: {
+          userId: getUser()?.id,
+          equipmentId: equipmentId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -172,6 +250,20 @@ export class UserService {
       );
     } catch (error) {
       console.error('Erreur lors de la suppression du favori:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'removeFavorite',
+          endpoint: API_URL_USER_FAVORITE_EQUIPMENT
+        },
+        extra: {
+          userId: getUser()?.id,
+          equipmentId: equipmentId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -198,6 +290,19 @@ export class UserService {
       return data;
     } catch (error) {
       console.error('Erreur lors de la récupération des catégories favorites:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'getFavoriteCategories',
+          endpoint: API_URL_USER_FAVORITE_CATEGORIES
+        },
+        extra: {
+          userId: getUser()?.id,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -222,11 +327,26 @@ export class UserService {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}` 
           },
+          body: JSON.stringify({ categoryId }),
         },
         this.apiUrl
       );
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de la catégorie aux favoris:', error);
+      console.error('Erreur lors de l\'ajout de la catégorie favorite:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'addFavoriteCategory',
+          endpoint: API_URL_USER_FAVORITE_CATEGORY
+        },
+        extra: {
+          userId: getUser()?.id,
+          categoryId: categoryId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -253,6 +373,20 @@ export class UserService {
       );
     } catch (error) {
       console.error('Erreur lors de la suppression de la catégorie des favoris:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'removeFavoriteCategory',
+          endpoint: API_URL_USER_FAVORITE_CATEGORY
+        },
+        extra: {
+          userId: getUser()?.id,
+          categoryId: categoryId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as Sentry from '@sentry/react';
 
 function getApiUrl(): string {
     try {
@@ -29,6 +30,17 @@ export class AuthentificationService {
                 })
         }
         catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'AuthentificationService',
+                    method: 'login',
+                    endpoint: `/api/login_check`
+                },
+                extra: {
+                    username: username,
+                    apiUrl: this.apiUrl
+                }
+            });
             throw error;
         }
     }
@@ -53,6 +65,23 @@ export class AuthentificationService {
             return axios.post(`${this.apiUrl}/api/register`, registerData);
         }
         catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'AuthentificationService',
+                    method: 'register',
+                    endpoint: `/api/register`
+                },
+                extra: {
+                    hasFirstName: !!userData.firstName,
+                    hasLastName: !!userData.lastName,
+                    hasEmail: !!userData.email,
+                    hasBirthDate: !!userData.birthDate,
+                    hasAddress: !!userData.address,
+                    hasCity: !!userData.city,
+                    hasCountry: !!userData.country,
+                    apiUrl: this.apiUrl
+                }
+            });
             throw error;
         }
     }
@@ -79,6 +108,17 @@ export class AuthentificationService {
                 })
         }
         catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'AuthentificationService',
+                    method: 'refresh',
+                    endpoint: `/api/token/refresh`
+                },
+                extra: {
+                    hasRefreshToken: !!localStorage.getItem("refresh_token"),
+                    apiUrl: this.apiUrl
+                }
+            });
             throw error;
         }
     }

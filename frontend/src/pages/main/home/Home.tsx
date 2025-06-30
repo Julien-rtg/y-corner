@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, HeartFilled } from '../../../components/icons/Heart';
 import userService from '@/services/user';
 import { toast } from 'sonner';
+import * as Sentry from '@sentry/react';
 
 function Home() {
   const navigate = useNavigate();
@@ -46,6 +47,9 @@ function Home() {
           });
         } catch (favError) {
           console.error("Failed to fetch favorites:", favError);
+          Sentry.captureException(favError, {
+            tags: { component: 'Home', function: 'fetchFavorites' }
+          });
         }
         
         setEquipment(data);
@@ -78,6 +82,16 @@ function Home() {
       } catch (err) {
         console.error("Failed to fetch equipment:", err);
         setError("Failed to load equipment. Please try again later.");
+        
+        Sentry.captureException(err, {
+          tags: {
+            component: 'Home',
+            function: 'fetchEquipment'
+          },
+          extra: {
+            message: 'Error loading equipment data'
+          }
+        });
       } finally {
         setLoading(false);
       }
