@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: symfony_app
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000" # Symfony server
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: mysql://root:root@db:3306/ycorner?serverVersion=8.0.37
+      MONGODB_URL: mongodb+srv://admin:admin@cluster0.bfb0y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      MONGODB_DB: ycorner-chat
+    command: bash -c "composer run-script post-install-cmd && php bin/console cache:clear && php -S 0.0.0.0:8000 -t public"
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ycorner
+
+volumes:
+  db_data:
