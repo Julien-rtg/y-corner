@@ -1,6 +1,8 @@
 FROM php:8.2-fpm
 
-# Install system dependencies
+WORKDIR /var/www/html
+
+# Install system dependencies & PHP extensions
 RUN apt-get update && apt-get install -y \
     git unzip libicu-dev libzip-dev zip libpng-dev libonig-dev libxml2-dev \
     libcurl4-openssl-dev pkg-config libssl-dev gnupg2 libpq-dev \
@@ -12,17 +14,25 @@ RUN pecl install mongodb-1.21.0 \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www/html
+# Copy composer files and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --optimize-autoloader --prefer-dist --no-scripts
 
-# Copy app files
+# Copy application code
 COPY . .
 
-# Set permissions (dev-friendly)
-RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
+# Create .env.local with MongoDB configuration
+RUN echo "MONGODB_URL=mongodb+srv://admin:admin@cluster0.bfb0y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" > .env.local \
+    && echo "MONGODB_DB=ycorner-chat" >> .env.local \
+    && echo "SYMFONY_APP_SECRET=ThisIsASecretForLocalDevelopmentOnly" >> .env.local \
+    && echo "JWT_PASSPHRASE=root" >> .env.local \
+    && echo "DATABASE_URL=mysql://root:root@db:3306/ycorner?serverVersion=8.0.37" >> .env.local
 
-# Install PHP dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-scripts
+# Run composer scripts
+RUN composer run-script post-install-cmd
+
+# Set permissions for Symfony cache/logs
+RUN chown -R www-data:www-data var
 
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000
