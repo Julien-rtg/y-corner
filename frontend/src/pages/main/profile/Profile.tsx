@@ -139,7 +139,7 @@ const Profile = () => {
           </div>
         )}
 
-        {!isEditing ? (
+        {!isEditing && !isLoading && (
           <div className="bg-white shadow-md rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Informations personnelles</h2>
@@ -203,7 +203,8 @@ const Profile = () => {
               </button>
             </div>
           </div>
-        ) : (
+        )}
+        {isEditing && !isLoading && (
           <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Modifier mes informations</h2>
