@@ -5,7 +5,8 @@ function getApiUrl(): string {
     try {
         return process.env.VITE_API_URL as string;
     } catch (error) {
-        return 'http://localhost:8000';
+        // return 'http://localhost:8000';
+        return 'http://localhost:8080';
     }
 }
 
