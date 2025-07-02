@@ -1,44 +1,43 @@
 version: '3.8'
 
 services:
-  app:
+  php:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: symfony_app
     volumes:
       - .:/var/www/html
     depends_on:
-      - db
-    environment:
-      DATABASE_URL: "mysql://root:root@db:3306/ycorner?serverVersion=8.0.37"
-      MONGODB_URL: "mongodb+srv://admin:admin@cluster0.bfb0y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-      MONGODB_SERVER: "mongodb+srv://admin:admin@cluster0.bfb0y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-      MONGODB_DB: "ycorner-chat"
+      - mysql
+      - mongo
 
   nginx:
     image: nginx:alpine
-    container_name: symfony_nginx
     ports:
-      - "8000:80"
+      - "8080:80"
     volumes:
-      - .:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ../:/var/www/html
     depends_on:
-      - app
+      - php
 
-  db:
-    image: mysql:8.0
-    container_name: mysql_db
-    restart: always
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+  mysql:
+    image: mysql:8
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ycorner
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
 volumes:
-  db_data:
+  mysql_data:
+  mongo_data:
