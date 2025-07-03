@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
@@ -17,6 +17,7 @@ import Equipment from './pages/main/equipment/Equipment';
 import Wishlist from './pages/main/wishlist/Wishlist';
 import Contact from './pages/main/contact/Contact';
 import { init } from "@sentry/react";
+import Sidebar from '@/components/sidebar/Sidebar';
 
 export const UnreadMessagesContext = createContext<{
   unreadCount: number;
@@ -25,6 +26,21 @@ export const UnreadMessagesContext = createContext<{
   unreadCount: 0,
   refreshUnreadCount: async () => { }
 });
+
+// Layout component that will contain the sidebar and main content
+const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAuthenticated: boolean }) => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/reset-password';
+  
+  return (
+    <div className="flex">
+      {isAuthenticated && !isAuthPage && <Sidebar />}
+      <div className={`${isAuthenticated && !isAuthPage ? 'ml-80' : ''} flex-1`}>
+        {children}
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const auth = new AuthentificationService();
@@ -124,32 +140,34 @@ function App() {
   return (
     <UnreadMessagesContext.Provider value={{ unreadCount, refreshUnreadCount }}>
       <Router>
-        <Routes>
-          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
-          <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
-          <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/" />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/messages" element={isAuthenticated ?
-            <ChatPage
-              sendJsonMessage={sendJsonMessage}
-              lastJsonMessage={lastJsonMessage}
-              readyState={readyState}
-            /> : <Navigate to="/login" />} />
-          <Route
-            path="/equipment/:id"
-            element={<EquipmentDetail
-              sendJsonMessage={sendJsonMessage}
-              lastJsonMessage={lastJsonMessage}
-              readyState={readyState}
-            />}
-          />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/my-equipments" element={isAuthenticated ? <MyEquipments /> : <Navigate to="/login" />} />
-          <Route path="/equipment" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
-          <Route path="/edit-equipment/:id" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
-          <Route path="/wishlist" element={isAuthenticated ? <Wishlist /> : <Navigate to="/login" />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
+        <Layout isAuthenticated={isAuthenticated}>
+          <Routes>
+            <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+            <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
+            <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/" />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/messages" element={isAuthenticated ?
+              <ChatPage
+                sendJsonMessage={sendJsonMessage}
+                lastJsonMessage={lastJsonMessage}
+                readyState={readyState}
+              /> : <Navigate to="/login" />} />
+            <Route
+              path="/equipment/:id"
+              element={<EquipmentDetail
+                sendJsonMessage={sendJsonMessage}
+                lastJsonMessage={lastJsonMessage}
+                readyState={readyState}
+              />}
+            />
+            <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+            <Route path="/my-equipments" element={isAuthenticated ? <MyEquipments /> : <Navigate to="/login" />} />
+            <Route path="/equipment" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
+            <Route path="/edit-equipment/:id" element={isAuthenticated ? <Equipment /> : <Navigate to="/login" />} />
+            <Route path="/wishlist" element={isAuthenticated ? <Wishlist /> : <Navigate to="/login" />} />
+            <Route path="/contact" element={<Contact />} />
+          </Routes>
+        </Layout>
         <Toaster richColors />
       </Router>
     </UnreadMessagesContext.Provider>

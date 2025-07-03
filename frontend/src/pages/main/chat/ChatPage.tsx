@@ -7,7 +7,6 @@ import { getToken, getUser } from '@/utils/getToken';
 import { api } from '@/lib/api';
 import chatService from '@/services/chat/chat';
 import { UnreadMessagesContext } from '@/App';
-import Sidebar from '@/components/sidebar/Sidebar';
 
 interface Message {
     id: string;
@@ -136,9 +135,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     }
 
     return (
-        <div className="flex min-h-screen bg-background">
-            <Sidebar />
-            <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background">
 
                 {loading && (
                     <div className="min-h-screen flex items-center justify-center">
@@ -146,12 +143,13 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                     </div>
                 )}
 
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h1 className="text-2xl font-bold">Mes conversations</h1>
-                        <Button
-                            variant="outline"
-                            className="hover:bg-muted transition-colors group"
+                {!loading && (
+                    <div className="container mx-auto px-4 py-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <h1 className="text-2xl font-bold">Mes conversations</h1>
+                            <Button
+                                variant="outline"
+                                className="hover:bg-muted transition-colors group"
                             onClick={handleGoBack}
                         >
                             <ArrowLeft className="mr-2 h-4 w-4 group-hover:translate-x-[-2px] transition-transform" />
@@ -234,7 +232,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                         </div>
                     )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
