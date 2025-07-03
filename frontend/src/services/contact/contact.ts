@@ -46,9 +46,9 @@ export async function sendContactMessage(data: ContactFormData, files?: File[]):
     formData.append('name', data.name);
   }
   
-  // Add the files
-  files.forEach((file, index) => {
-    formData.append(`file${index}`, file);
+  // Add the files with explicit file names
+  files.forEach((file) => {
+    formData.append('files[]', file, file.name);
   });
 
   return api<ContactResponse>('/api/contact', {
