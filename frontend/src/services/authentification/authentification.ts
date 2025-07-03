@@ -5,8 +5,11 @@ function getApiUrl(): string {
     try {
         return process.env.VITE_API_URL as string;
     } catch (error) {
-        // return 'http://localhost:8000';
-        return 'http://localhost:8080';
+        try {
+            return import.meta.env.VITE_API_URL;
+        } catch (error) {
+            return 'http://localhost:8080';
+        }
     }
 }
 
