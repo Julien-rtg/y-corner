@@ -7,7 +7,6 @@ import { Category as CategoryInterface } from "@/interfaces/Category.interface";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUser } from "@/utils/getToken";
-import Sidebar from "@/components/sidebar/Sidebar";
 import { EquipmentService } from "@/services/equipment/equipment";
 import userService from "@/services/user/user";
 import { toast } from "sonner";
@@ -102,8 +101,6 @@ function EquipmentDetail({ sendJsonMessage, lastJsonMessage, readyState }: any) 
 
 	return (
 		<div className="flex min-h-screen bg-background">
-			<Sidebar />
-
 			{loading && (
 				<div className="container mx-auto px-4 py-8">
 					<div className="min-h-screen flex items-center justify-center">

@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Sidebar from '@/components/sidebar/Sidebar';
 import { Badge } from "@/components/ui/badge";
 import { Equipment } from '@/interfaces/Equipment.interface';
 import { EquipmentService } from '@/services/equipment/equipment';
@@ -157,7 +156,6 @@ function Home() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col gap-6">

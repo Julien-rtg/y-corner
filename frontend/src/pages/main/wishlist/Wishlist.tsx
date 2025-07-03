@@ -1,4 +1,3 @@
-import Sidebar from '@/components/sidebar/Sidebar';
 import CategoryWishlist from './Category-wishlist';
 import EquipmentWishlist from './Equipment-wishlist';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +6,6 @@ function Wishlist() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col gap-6">

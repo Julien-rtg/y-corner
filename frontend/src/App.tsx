@@ -27,7 +27,6 @@ export const UnreadMessagesContext = createContext<{
   refreshUnreadCount: async () => { }
 });
 
-// Layout component that will contain the sidebar and main content
 const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAuthenticated: boolean }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/reset-password';

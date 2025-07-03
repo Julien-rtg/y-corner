@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Sidebar from '@/components/sidebar/Sidebar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,7 +72,6 @@ function Contact() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-[800px] mx-auto">
           <div className="flex flex-col gap-6">
