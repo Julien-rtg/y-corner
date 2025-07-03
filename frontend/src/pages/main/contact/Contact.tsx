@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { sendContactMessage } from '@/services/contact/contact';
 import {
   Form,
   FormControl,
@@ -22,6 +23,8 @@ import { Paperclip, X } from 'lucide-react';
 const contactFormSchema = z.object({
   subject: z.string().min(3, { message: "L'objet doit contenir au moins 3 caractères" }),
   message: z.string().min(10, { message: "Le message doit contenir au moins 10 caractères" }),
+  email: z.string().email({ message: "L'adresse email n'est pas valide" }).optional(),
+  name: z.string().optional(),
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -35,6 +38,8 @@ function Contact() {
     defaultValues: {
       subject: "",
       message: "",
+      email: "",
+      name: "",
     },
   });
 
@@ -43,7 +48,6 @@ function Contact() {
       const newFiles = Array.from(e.target.files);
       setFiles(prev => [...prev, ...newFiles]);
     }
-    // Réinitialiser l'input pour permettre de sélectionner à nouveau le même fichier
     e.target.value = '';
   };
 
@@ -54,20 +58,8 @@ function Contact() {
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
     try {
-      // Créer un FormData pour envoyer les fichiers
-      const formData = new FormData();
-      formData.append('subject', data.subject);
-      formData.append('message', data.message);
+      await sendContactMessage(data, files);
       
-      // Ajouter les fichiers
-      files.forEach((file, index) => {
-        formData.append(`file${index}`, file);
-      });
-
-      // Simuler un envoi de formulaire (à remplacer par un appel API réel)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Réinitialiser le formulaire après soumission réussie
       form.reset();
       setFiles([]);
       toast.success('Votre message a été envoyé avec succès');
@@ -115,6 +107,36 @@ function Contact() {
                         </FormItem>
                       )}
                     />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nom</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Votre nom" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="votre.email@exemple.com" type="email" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
                     <FormField
                       control={form.control}

@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUser } from "@/utils/getToken";
 import Sidebar from "@/components/sidebar/Sidebar";
-import { EquipmentService } from "@/services/equipment";
-import userService from "@/services/user";
+import { EquipmentService } from "@/services/equipment/equipment";
+import userService from "@/services/user/user";
 import { toast } from "sonner";
 import { HeartFilled } from "@/components/icons/Heart";
 

@@ -5,7 +5,7 @@ import Chat from '@/components/chat/Chat';
 import { Button } from '@/components/ui/button';
 import { getToken, getUser } from '@/utils/getToken';
 import { api } from '@/lib/api';
-import chatService from '@/services/chat';
+import chatService from '@/services/chat/chat';
 import { UnreadMessagesContext } from '@/App';
 import Sidebar from '@/components/sidebar/Sidebar';
 
@@ -34,7 +34,6 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Function to fetch conversations and unread counts
     const fetchConversationsAndUnreadCounts = async () => {
         if (!user || !user.id) return;
 
@@ -47,10 +46,8 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
 
             const conversationsData = data as Conversation[];
 
-            // Get unread counts
             const unreadResponse = await chatService.getUnreadMessageCount(user.id);
 
-            // Add unread counts to conversations
             const conversationsWithUnread = conversationsData.map(conv => ({
                 ...conv,
                 unreadCount: unreadResponse.unreadCounts[conv.recipientId] || 0
@@ -103,15 +100,11 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
         if (user && user.id && conversation.recipientId) {
             chatService.markMessagesAsSeen(parseInt(conversation.recipientId), user.id);
 
-            // Update the conversation in the list to show 0 unread messages
             setConversations(prevConversations => {
                 const updatedConversations = prevConversations.map(conv =>
                     conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
                 );
-
-                // Also update the total unread count in the context
                 if (conversation.unreadCount && conversation.unreadCount > 0) {
-                    // Refresh the unread count in the context to update the sidebar badge
                     refreshUnreadCount();
                 }
 

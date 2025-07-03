@@ -119,7 +119,6 @@ export default function Filters({
                 value={priceRange[0].toString()}
                 onChange={(e) => {
                   const inputValue = e.target.value;
-                  // Autoriser uniquement les chiffres ou une chaîne vide
                   if (inputValue === '' || /^\d+$/.test(inputValue)) {
                     const value = inputValue === '' ? 0 : parseInt(inputValue);
                     setPriceRange([value, priceRange[1]]);
@@ -139,7 +138,6 @@ export default function Filters({
                 value={priceRange[1].toString()}
                 onChange={(e) => {
                   const inputValue = e.target.value;
-                  // Autoriser uniquement les chiffres ou une chaîne vide
                   if (inputValue === '' || /^\d+$/.test(inputValue)) {
                     const value = inputValue === '' ? 0 : parseInt(inputValue);
                     setPriceRange([priceRange[0], value]);

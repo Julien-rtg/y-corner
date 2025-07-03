@@ -8,8 +8,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Category } from '@/interfaces/Category.interface';
 import { Heart, HeartFilled } from '@/components/icons/Heart';
-import userService from '@/services/user';
-import { CategoryService } from '@/services/category';
+import userService from '@/services/user/user';
+import { CategoryService } from '@/services/category/category';
 import { toast } from 'sonner';
 
 const categoryService = new CategoryService();
@@ -24,11 +24,9 @@ function CategoryWishlist() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Récupérer toutes les catégories
         const allCategories = await categoryService.getAllCategories();
         setCategories(allCategories);
         
-        // Récupérer les catégories favorites de l'utilisateur
         const userFavoriteCategories = await userService.getFavoriteCategories();
         setFavoriteCategories(userFavoriteCategories);
         
@@ -44,12 +42,9 @@ function CategoryWishlist() {
     fetchData();
   }, []);
 
-  // Vérifier si une catégorie est dans les favoris
   const isFavorite = (categoryId: number) => {
     return favoriteCategories.some(cat => cat.id === categoryId);
   };
-
-  // Ajouter une catégorie aux favoris
   const handleAddFavorite = async (category: Category) => {
     try {
       await userService.addFavoriteCategory(category.id);
@@ -61,7 +56,6 @@ function CategoryWishlist() {
     }
   };
 
-  // Retirer une catégorie des favoris
   const handleRemoveFavorite = async (category: Category) => {
     try {
       await userService.removeFavoriteCategory(category.id);

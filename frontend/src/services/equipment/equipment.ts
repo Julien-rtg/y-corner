@@ -1,4 +1,4 @@
-import { Equipment } from "../interfaces/Equipment.interface";
+import { Equipment } from "../../interfaces/Equipment.interface";
 import { API_URL_CREATE_EQUIPMENT, API_URL_EQUIPMENT, API_URL_EQUIPMENTS, API_URL_USER_EQUIPMENTS } from "@/constants/api.ts";
 import { api } from "@/lib/api.ts";
 import { getToken, getUser } from "@/utils/getToken.ts";

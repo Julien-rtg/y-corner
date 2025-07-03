@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Equipment } from '@/interfaces/Equipment.interface';
 import { useNavigate } from 'react-router-dom';
 import { Heart, HeartFilled } from '@/components/icons/Heart';
-import userService from '@/services/user';
+import userService from '@/services/user/user';
 import { toast } from 'sonner';
 
 function EquipmentWishlist() {

@@ -1,4 +1,4 @@
-import { Category } from "../interfaces/Category.interface";
+import { Category } from "../../interfaces/Category.interface";
 import { API_URL_CATEGORIES } from "@/constants/api.ts";
 import { api } from "@/lib/api.ts";
 import { getToken } from "@/utils/getToken.ts";

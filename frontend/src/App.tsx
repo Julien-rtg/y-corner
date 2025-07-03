@@ -9,7 +9,7 @@ import EquipmentDetail from "@/pages/main/equipment-detail/Equipment-detail";
 import Home from "@/pages/main/home/Home";
 import ChatPage from "@/pages/main/chat/ChatPage";
 import useWebSocket from 'react-use-websocket';
-import chatService from '@/services/chat';
+import chatService from '@/services/chat/chat';
 import { getUser } from '@/utils/getToken';
 import Profile from './pages/main/profile/Profile';
 import MyEquipments from './pages/main/my-equipments/MyEquipments';

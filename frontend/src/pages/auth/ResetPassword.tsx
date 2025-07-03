@@ -24,7 +24,6 @@ export default function ResetPassword() {
   const onSubmit = async (data: ResetForm) => {
     setIsLoading(true);
     try {
-      // Implement your password reset logic here
       console.log('Reset password data:', data);
       toast.success('If an account exists with this email, you will receive password reset instructions.');
     } catch (error) {

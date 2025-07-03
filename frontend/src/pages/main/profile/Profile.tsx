@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/interfaces/User.interface';
 import { getUser } from '@/utils/getToken';
-import userService, { UserUpdateData } from '@/services/user';
+import userService, { UserUpdateData } from '@/services/user/user';
 import { toast } from 'sonner';
 import { AuthentificationService } from '@/services/authentification/authentification';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +40,6 @@ const Profile = () => {
         const userData = await userService.getUserDetails(currentUser.id);
         setUser(userData);
 
-        // Initialiser le formulaire avec les données utilisateur
         setFormData({
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
@@ -90,7 +89,6 @@ const Profile = () => {
       setIsEditing(false);
       toast.success('Profil mis à jour avec succès');
 
-      // Mettre à jour les informations utilisateur dans le localStorage
       const storedUser = getUser();
       localStorage.setItem('user', JSON.stringify({
         ...storedUser,

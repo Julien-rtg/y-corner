@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Equipment } from "@/interfaces/Equipment.interface";
-import { EquipmentService } from "@/services/equipment";
+import { EquipmentService } from "@/services/equipment/equipment";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";

@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import Sidebar from '@/components/sidebar/Sidebar';
 import { Badge } from "@/components/ui/badge";
 import { Equipment } from '@/interfaces/Equipment.interface';
-import { EquipmentService } from '@/services/equipment';
+import { EquipmentService } from '@/services/equipment/equipment';
 import { useNavigate } from 'react-router-dom';
 import { Heart, HeartFilled } from '../../../components/icons/Heart';
-import userService from '@/services/user';
+import userService from '@/services/user/user';
 import { toast } from 'sonner';
 import * as Sentry from '@sentry/react';
 
