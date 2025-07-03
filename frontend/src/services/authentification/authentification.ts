@@ -19,6 +19,28 @@ export class AuthentificationService {
     constructor(apiUrl?: string) {
         this.apiUrl = apiUrl || getApiUrl();
     }
+    
+    public async requestPasswordReset(email: string): Promise<any> {
+        try {
+            return axios.post(`${this.apiUrl}/api/reset-password`, {
+                email: email
+            });
+        }
+        catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'AuthentificationService',
+                    method: 'requestPasswordReset',
+                    endpoint: `/api/reset-password`
+                },
+                extra: {
+                    email: email,
+                    apiUrl: this.apiUrl
+                }
+            });
+            throw error;
+        }
+    }
 
     public async login(username: string, password: string): Promise<any> {
         try {
