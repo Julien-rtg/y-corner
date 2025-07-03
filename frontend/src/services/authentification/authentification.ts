@@ -1,12 +1,13 @@
 import axios from 'axios';
 import * as Sentry from '@sentry/react';
+import { API_URL_BASE } from '@/constants/api';
 
 function getApiUrl(): string {
     try {
         return process.env.VITE_API_URL as string;
     } catch (error) {
         try {
-            return import.meta.env.VITE_API_URL;
+            return API_URL_BASE;
         } catch (error) {
             return 'http://localhost:8080';
         }

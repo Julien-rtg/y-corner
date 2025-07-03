@@ -1,3 +1,4 @@
+export const API_URL_BASE = 'http://localhost:8000';
 export const API_URL_LOGIN = '/api/login';
 export const API_URL_USERS = '/api/users';
 export const API_URL_USER_REMOVE = '/api/users/remove/';
