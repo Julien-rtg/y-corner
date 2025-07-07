@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Equipment } from "@/interfaces/Equipment.interface";
-import { EquipmentService } from "@/services/equipment";
+import { EquipmentService } from "@/services/equipment/equipment";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import Sidebar from "@/components/sidebar/Sidebar";
 import { toast } from "sonner";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
 
@@ -76,8 +75,6 @@ function MyEquipments() {
 
     return (
         <div className="flex min-h-screen bg-background">
-            <Sidebar />
-
             <div className="container mx-auto px-4 py-8">
                 {loading && (
                     <div className="min-h-screen flex items-center justify-center">

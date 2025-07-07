@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import useWebSocket, { ReadyState } from "react-use-websocket";
-import chatService, { ChatMessage } from '@/services/chat';
+import { ReadyState } from "react-use-websocket";
+import chatService, { ChatMessage } from '@/services/chat/chat';
 import { Check, CheckCheck } from 'lucide-react';
 
 interface WebSocketNewMessage {

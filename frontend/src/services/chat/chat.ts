@@ -1,5 +1,6 @@
 import { api } from '@/lib/api';
 import { getToken } from '@/utils/getToken';
+import * as Sentry from '@sentry/react';
 
 export interface ChatMessage {
   id: string;
@@ -65,6 +66,20 @@ export class ChatService {
       return data || [];
     } catch (error) {
       console.error('Error fetching messages:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'ChatService',
+          method: 'getMessagesBetweenUsers',
+          endpoint: `/api/chat/messages`
+        },
+        extra: {
+          userId: userId,
+          recipientId: recipientId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }
@@ -86,6 +101,19 @@ export class ChatService {
       return data || [];
     } catch (error) {
       console.error('Error fetching conversations:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'ChatService',
+          method: 'getUserConversations',
+          endpoint: `/api/chat/conversations`
+        },
+        extra: {
+          userId: userId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
       throw error;
     }
   }

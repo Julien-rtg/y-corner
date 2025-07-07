@@ -1,7 +1,8 @@
-import { Equipment } from "../interfaces/Equipment.interface";
+import { Equipment } from "../../interfaces/Equipment.interface";
 import { API_URL_CREATE_EQUIPMENT, API_URL_EQUIPMENT, API_URL_EQUIPMENTS, API_URL_USER_EQUIPMENTS } from "@/constants/api.ts";
 import { api } from "@/lib/api.ts";
 import { getToken, getUser } from "@/utils/getToken.ts";
+import * as Sentry from '@sentry/react';
 
 export class EquipmentService {
     public async getAllEquipment(): Promise<Equipment[]> {
@@ -22,6 +23,17 @@ export class EquipmentService {
 
             return data;
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'getAllEquipment',
+                    endpoint: API_URL_EQUIPMENTS
+                },
+                extra: {
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {
@@ -51,6 +63,18 @@ export class EquipmentService {
 
             return data;
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'getEquipment',
+                    endpoint: API_URL_EQUIPMENT
+                },
+                extra: {
+                    equipmentId: id,
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {
@@ -77,6 +101,17 @@ export class EquipmentService {
 
             return data;
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'getUserEquipments',
+                    endpoint: API_URL_USER_EQUIPMENTS
+                },
+                extra: {
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {
@@ -98,6 +133,18 @@ export class EquipmentService {
                 import.meta.env.VITE_API_URL || ""
             );
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'deleteEquipment',
+                    endpoint: API_URL_EQUIPMENT
+                },
+                extra: {
+                    equipmentId: id,
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {
@@ -142,6 +189,25 @@ export class EquipmentService {
                 import.meta.env.VITE_API_URL || ""
             );
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'createEquipment',
+                    endpoint: API_URL_CREATE_EQUIPMENT
+                },
+                extra: {
+                    equipmentData: JSON.stringify({
+                        name: equipmentData.name,
+                        price: equipmentData.price,
+                        description: equipmentData.description,
+                        city: equipmentData.city,
+                        categories: equipmentData.categories.length,
+                        hasImages: equipmentData.images.length > 0
+                    }),
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {
@@ -174,6 +240,25 @@ export class EquipmentService {
                 import.meta.env.VITE_API_URL || ""
             );
         } catch (error) {
+            Sentry.captureException(error, {
+                tags: {
+                    service: 'EquipmentService',
+                    method: 'updateEquipment',
+                    endpoint: API_URL_EQUIPMENT
+                },
+                extra: {
+                    equipmentId: id,
+                    equipmentData: JSON.stringify({
+                        name: equipmentData.name,
+                        price: equipmentData.price,
+                        city: equipmentData.city,
+                        categories: equipmentData.categories.length,
+                        hasImages: equipmentData.images.length > 0
+                    }),
+                    apiUrl: import.meta.env.VITE_API_URL || ""
+                }
+            });
+            
             if (error instanceof Error) {
                 throw error;
             } else {

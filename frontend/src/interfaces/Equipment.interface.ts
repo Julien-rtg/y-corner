@@ -11,4 +11,5 @@ export interface Equipment {
     images: Image[];
     user: User;
     description: string;
+    isFavorite?: boolean;
 }

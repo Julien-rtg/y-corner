@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Category } from '@/interfaces/Category.interface';
 import { Image as ImageInterface } from '@/interfaces/Image.interface';
-import { EquipmentService } from '@/services/equipment';
-import { CategoryService } from '@/services/category';
+import { EquipmentService } from '@/services/equipment/equipment';
+import { CategoryService } from '@/services/category/category';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Plus, X, Upload, Save } from 'lucide-react';
-import Sidebar from '@/components/sidebar/Sidebar';
 import { toast } from 'sonner';
 
 interface EquipmentFormData {
@@ -242,7 +241,6 @@ function Equipment() {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
@@ -252,7 +250,6 @@ function Equipment() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">
           {isEditMode ? 'Modifier l\'équipement' : 'Ajouter un équipement'}

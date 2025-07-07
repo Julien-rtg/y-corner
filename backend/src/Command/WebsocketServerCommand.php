@@ -31,6 +31,7 @@ class WebsocketServerCommand extends Command
     {
         $this
             ->addArgument('port', InputArgument::OPTIONAL, 'Port utilisé par le websocket', 8080)
+            ->addArgument('host', InputArgument::OPTIONAL, 'Host pour le websocket', '0.0.0.0')
         ;
     }
 
@@ -38,8 +39,9 @@ class WebsocketServerCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $port = $input->getArgument('port');
+        $host = $input->getArgument('host');
 
-        $io->success('Démarrage du serveur websocket sur le port '.$port.'.');
+        $io->success('Démarrage du serveur websocket sur '.$host.':'.$port.'.');
 
         $server = IoServer::factory(
             new HttpServer(
@@ -47,7 +49,8 @@ class WebsocketServerCommand extends Command
                     $this->websocketService
                 )
             ),
-            $port
+            $port,
+            $host
         );
 
         $server->run();

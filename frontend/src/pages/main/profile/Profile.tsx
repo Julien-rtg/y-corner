@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/interfaces/User.interface';
 import { getUser } from '@/utils/getToken';
-import userService, { UserUpdateData } from '@/services/user';
+import userService, { UserUpdateData } from '@/services/user/user';
 import { toast } from 'sonner';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '@/components/sidebar/Sidebar';
 
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -40,7 +39,6 @@ const Profile = () => {
         const userData = await userService.getUserDetails(currentUser.id);
         setUser(userData);
 
-        // Initialiser le formulaire avec les données utilisateur
         setFormData({
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
@@ -90,7 +88,6 @@ const Profile = () => {
       setIsEditing(false);
       toast.success('Profil mis à jour avec succès');
 
-      // Mettre à jour les informations utilisateur dans le localStorage
       const storedUser = getUser();
       localStorage.setItem('user', JSON.stringify({
         ...storedUser,
@@ -129,7 +126,6 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Mon Profil</h1>
 
@@ -139,7 +135,7 @@ const Profile = () => {
           </div>
         )}
 
-        {!isEditing ? (
+        {!isEditing && !isLoading && (
           <div className="bg-white shadow-md rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Informations personnelles</h2>
@@ -203,7 +199,8 @@ const Profile = () => {
               </button>
             </div>
           </div>
-        ) : (
+        )}
+        {isEditing && !isLoading && (
           <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Modifier mes informations</h2>

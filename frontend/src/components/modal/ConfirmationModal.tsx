@@ -36,7 +36,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onClose();
   };
 
-  // Déterminer les classes CSS en fonction de la variante
   const getActionClassName = () => {
     switch (variant) {
       case 'danger':

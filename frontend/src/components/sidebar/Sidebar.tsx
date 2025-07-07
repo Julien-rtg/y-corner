@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-80 h-screen bg-card border-r p-6 flex flex-col">
+    <div className="w-80 h-screen bg-card border-r p-6 flex flex-col fixed left-0 top-0">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-lg font-semibold">YCorner</h2>
       </div>

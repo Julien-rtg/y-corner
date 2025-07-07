@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { AuthentificationService } from '@/services/authentification';
+import { AuthentificationService } from '@/services/authentification/authentification';
 
 const loginSchema = z.object({
-    email: z.string().email('Please enter a valid email'),
-    password: z.string().min(2, 'Password must be at least 8 characters'),
+    email: z.string().email('Veuillez entrer un email valide'),
+    password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -29,9 +29,9 @@ export default function Login() {
         try {
             await auth.login(data.email, data.password);
             window.location.href = '/';
-            toast.success('Successfully logged in!');
+            toast.success('Connexion réussie !');
         } catch (error) {
-            toast.error('Failed to login. Please try again.');
+            toast.error('Échec de connexion. Veuillez réessayer.');
         } finally {
             setIsLoading(false);
         }
@@ -41,8 +41,8 @@ export default function Login() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold">Welcome back</h1>
-                    <p className="text-muted-foreground mt-2">Enter your credentials to access your account</p>
+                    <h1 className="text-3xl font-bold">Bon retour</h1>
+                    <p className="text-muted-foreground mt-2">Entrez vos identifiants pour accéder à votre compte</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -51,7 +51,7 @@ export default function Login() {
                         <Input
                             id="email"
                             type="email"
-                            placeholder="name@example.com"
+                            placeholder="nom@exemple.com"
                             {...register('email')}
                         />
                         {errors.email && (
@@ -60,7 +60,7 @@ export default function Login() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">Mot de passe</Label>
                         <Input
                             id="password"
                             type="password"
@@ -71,25 +71,25 @@ export default function Login() {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-end mt-2">
                         <Link
                             to="/reset-password"
-                            className="text-sm text-primary hover:underline"
+                            className="text-sm text-primary hover:underline font-medium"
                         >
-                            Forgot password?
+                            Mot de passe oublié ?
                         </Link>
                     </div>
 
                     <Button type="submit" variant="default" className="w-full" disabled={isLoading}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Sign in
+                        Se connecter
                     </Button>
                 </form>
 
                 <p className="text-center text-sm text-muted-foreground">
-                    Don't have an account?{' '}
+                    Vous n'avez pas de compte ?{' '}
                     <Link to="/register" className="text-primary hover:underline">
-                        Sign up
+                        S'inscrire
                     </Link>
                 </p>
             </div>

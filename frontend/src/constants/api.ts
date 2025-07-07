@@ -1,3 +1,4 @@
+export const API_URL_BASE = 'http://localhost:8000';
 export const API_URL_LOGIN = '/api/login';
 export const API_URL_USERS = '/api/users';
 export const API_URL_USER_REMOVE = '/api/users/remove/';
@@ -6,3 +7,7 @@ export const API_URL_EQUIPMENT = '/api/equipment/{id}';
 export const API_URL_CREATE_EQUIPMENT = '/api/equipment';
 export const API_URL_USER_EQUIPMENTS = '/api/user/equipments';
 export const API_URL_CATEGORIES = '/api/categories';
+export const API_URL_USER_FAVORITES = '/api/users/{id}/favorites';
+export const API_URL_USER_FAVORITE_EQUIPMENT = '/api/users/{id}/favorites/{equipmentId}';
+export const API_URL_USER_FAVORITE_CATEGORIES = '/api/users/{id}/favorite-categories';
+export const API_URL_USER_FAVORITE_CATEGORY = '/api/users/{id}/favorite-categories/{categoryId}';

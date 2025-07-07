@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('styles/reset-password.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/reset-password.css') }}?v={{ 'now'|date('YmdHis') }}">
 {% endblock %}
 
 {% block body %}

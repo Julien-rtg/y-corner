@@ -12,18 +12,12 @@ export async function api<T = unknown>(
 	options: RequestOptions = {},
 	baseURL: string = ""
 ): Promise<T> {
-	const devMode = process.env.NODE_ENV === "development";
-
 	let preparedBaseURL = baseURL;
 	if (baseURL && !baseURL.startsWith("http://") && !baseURL.startsWith("https://")) {
 		preparedBaseURL = `https://${baseURL}`;
 	}
 
 	const url = new URL(endpoint, preparedBaseURL);
-
-	if (devMode && url.host.includes("localhost:3000")) {
-		url.host = url.host.replace("3000", "8000");
-	}
 
 	if (options.query) {
 		url.search = new URLSearchParams(options.query).toString();
