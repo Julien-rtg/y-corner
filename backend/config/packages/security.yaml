@@ -44,8 +44,8 @@ security:
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
-        - { path: ^/api/equipment, roles: IS_AUTHENTICATED_FULLY }
-
+        - { path: ^/api/users/\d+/basic-info, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

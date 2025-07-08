@@ -31,6 +31,10 @@ const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAu
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/reset-password';
   
+  if (!isAuthenticated && !isAuthPage) {
+    return <Navigate to="/login" />;
+  }
+  
   return (
     <div className="flex">
       {isAuthenticated && !isAuthPage && <Sidebar />}

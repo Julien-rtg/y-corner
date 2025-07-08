@@ -193,7 +193,7 @@ const Profile = () => {
             <div className="mt-10 pt-6 border-t border-gray-200">
               <button
                 onClick={() => setShowDeleteConfirmation(true)}
-                className="text-red-500 hover:text-red-600 font-medium"
+                className="text-white hover:text-white font-medium bg-red-500"
               >
                 Supprimer mon compte
               </button>

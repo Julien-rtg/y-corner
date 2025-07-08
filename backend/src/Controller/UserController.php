@@ -264,4 +264,24 @@ final class UserController extends AbstractController
 
         return new JsonResponse($serializedFavoriteCategories, Response::HTTP_OK, [], true);
     }
+    
+    #[Route('/{id}/basic-info', name: 'app_user_basic_info', methods: ['GET'])]
+    public function getUserBasicInfo(int $id): JsonResponse
+    {
+        return $this->executeWithErrorHandling(function() use ($id) {
+            $user = $this->userRepository->find($id);
+            if (!$user) {
+                return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+            }
+            
+            // Return only basic information (first name and last name)
+            $basicInfo = [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName()
+            ];
+            
+            return $this->json($basicInfo, Response::HTTP_OK);
+        }, ['user_id' => $id]);
+    }
 }

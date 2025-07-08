@@ -7,7 +7,7 @@ on:
       - dev
   pull_request:
     branches:
-      - develop
+      - dev
 
 jobs:
   # 1. Lancer les tests et la construction
