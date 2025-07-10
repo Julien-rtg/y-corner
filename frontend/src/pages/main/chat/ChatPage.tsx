@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, User } from 'lucide-react';
 import Chat from '@/components/chat/Chat';
@@ -35,6 +36,15 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobileView(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchConversationsAndUnreadCounts = async () => {
         if (!user || !user.id) return;
@@ -116,7 +126,11 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     }, [lastJsonMessage]);
 
     const handleGoBack = () => {
-        navigate(-1);
+        if (isMobileView && selectedConversation) {
+            setSelectedConversation(null);
+        } else {
+            navigate(-1);
+        }
     };
 
     const selectConversation = async (conversation: Conversation) => {
@@ -212,9 +226,12 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                             <p className="text-muted-foreground">Vous n'avez pas encore de conversations. Contactez un vendeur pour démarrer une discussion.</p>
                         </div>
                     ) : (
-                        <div className="flex gap-6">
+                        <div className="flex flex-col md:flex-row gap-6">
                             {/* Left side - Conversations list */}
-                            <div className="w-1/3 space-y-4">
+                            <div className={cn("space-y-4 md:w-1/3", {
+                                'hidden md:block': selectedConversation,
+                                'w-full': !selectedConversation
+                            })}>
                                 {conversations.map((conversation) => (
                                     <div
                                         key={conversation.id}
@@ -243,7 +260,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                             </div>
 
                             {/* Right side - Selected conversation */}
-                            <div className="w-2/3">
+                            <div className={cn("md:w-2/3", { 'hidden md:block': !selectedConversation, 'w-full': selectedConversation })}>
                                 {selectedConversation ? (
                                     <div className="bg-card shadow rounded-xl p-6">
                                         <div className="mb-4 pb-3 border-b">

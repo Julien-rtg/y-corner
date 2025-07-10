@@ -1,12 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { AuthentificationService } from '@/services/authentification/authentification';
-import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle } from 'lucide-react';
+import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useContext } from 'react';
 import { UnreadMessagesContext } from '@/App';
 
-export default function Sidebar() {
+interface SidebarProps {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
+}
+
+export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const authService = new AuthentificationService();
@@ -27,9 +32,16 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-80 h-screen bg-card border-r p-6 flex flex-col fixed left-0 top-0">
+    <div className={cn(
+      "h-screen bg-card border-r p-6 flex flex-col fixed lg:relative lg:translate-x-0 left-0 top-0 z-50 transition-transform duration-300 ease-in-out",
+      isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+      "w-80"
+    )}>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-lg font-semibold">YCorner</h2>
+        <Button variant="outline" className="lg:hidden" onClick={() => setIsSidebarOpen(false)}>
+          <X className="h-6 w-6" />
+        </Button>
       </div>
 
       <nav className="flex-1">
