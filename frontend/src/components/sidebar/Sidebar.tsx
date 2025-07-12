@@ -39,7 +39,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
     )}>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-lg font-semibold">YCorner</h2>
-        <Button variant="outline" className="lg:hidden" onClick={() => setIsSidebarOpen(false)}>
+        <Button variant="outline" className="lg:hidden" onClick={() => setIsSidebarOpen(false)} aria-label="Fermer le menu">
           <X className="h-6 w-6" />
         </Button>
       </div>

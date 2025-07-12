@@ -63,7 +63,7 @@ export default function Filters({
         {/* Category Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex-shrink-0">
+            <Button variant="outline" className="flex-shrink-0" aria-label="Filtrer par catégorie">
               <Filter className="mr-2 h-4 w-4" />
               {selectedCategory}
             </Button>
@@ -83,7 +83,7 @@ export default function Filters({
         {/* Sort Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex-shrink-0">
+            <Button variant="outline" className="flex-shrink-0" aria-label="Trier par">
               <ArrowUpDown className="mr-2 h-4 w-4" />
               {sortBy.includes('name') ? 
                 (sortBy === 'name_asc' ? 'Nom (A-Z)' : 'Nom (Z-A)') : 
@@ -154,7 +154,7 @@ export default function Filters({
         <div className="flex-1 space-y-2">
           <Label>Localisation</Label>
           <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full" aria-label="Filtrer par localisation">
               <div className="flex items-center">
                 <MapPin className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Sélectionner une localisation" />

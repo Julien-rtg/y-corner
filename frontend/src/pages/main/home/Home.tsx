@@ -194,10 +194,13 @@ function Home() {
             )}
 
             {!loading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <>
+                <h2 className="sr-only">Liste des équipements</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredEquipment.map((item) => (
                   <Card key={item.id} className="flex flex-col relative">
-                    <div 
+                    <button 
+                      aria-label={item.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
                       className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm cursor-pointer"
                       onClick={(e) => handleToggleFavorite(e, item)}
                     >
@@ -206,7 +209,7 @@ function Home() {
                       ) : (
                         <Heart className="h-5 w-5 text-gray-600 hover:text-red-500" />
                       )}
-                    </div>
+                    </button>
                     <CardHeader className="p-0" onClick={() => navigate(`/equipment/${item.id}`)}>
                       <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg">
                         {item.images && item.images.length > 0 ? (
@@ -250,7 +253,8 @@ function Home() {
                     </CardFooter>
                   </Card>
                 ))}
-              </div>
+                </div>
+              </>
             )}
             
             {!loading && !error && filteredEquipment.length === 0 && (
