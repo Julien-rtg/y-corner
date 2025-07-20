@@ -11,6 +11,8 @@ parameters:
     env(MONGODB_URL): ''
     env(MONGODB_DB): ''
     gesdinet_jwt_refresh_token.ttl: 2592000 # 30 days
+    app.sender_email: '%env(default:default_sender_email:MAILER_EMAIL)%'
+    default_sender_email: 'noreply@y-corner.com'
 
 services:
     # default configuration for services in *this* file
