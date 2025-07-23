@@ -57,6 +57,10 @@ class RegistrationController extends AbstractController
                 }
             }
 
+            if ($entityManager->getRepository(User::class)->findOneBy(['email' => $datas['email']])) {
+                throw new \InvalidArgumentException('Un utilisateur avec cet email existe déjà');
+            }
+
             $user = new User();
             $user->setEmail($datas['email']);
             $user->setRoles(['ROLE_USER']);
@@ -72,6 +76,12 @@ class RegistrationController extends AbstractController
             $user->setAddress($datas['address']);
             $user->setCountry($datas['country']);
             $user->setCity($datas['city']);
+            
+            // Set postal code if provided
+            if (isset($datas['postalCode']) && !empty($datas['postalCode'])) {
+                $user->setPostalCode((int)$datas['postalCode']);
+            }
+            
             $plaintextPassword = $datas['password'];
 
             // hash the password (based on the security.yaml config for the $user class)
@@ -80,8 +90,12 @@ class RegistrationController extends AbstractController
                 $plaintextPassword
             );
             $user->setPassword($hashedPassword);
-            $entityManager->persist($user);
-            $entityManager->flush();
+            try {
+                $entityManager->persist($user);
+                $entityManager->flush();
+            } catch (UniqueConstraintViolationException $e) {
+                throw new \InvalidArgumentException('Un utilisateur avec cet email existe déjà');
+            }
             
             return $this->json(['message' => 'Utilisateur enregistré avec succès'], Response::HTTP_CREATED);
         }, ['request_data' => json_decode($request->getContent(), true)]);
