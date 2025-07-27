@@ -66,6 +66,7 @@ class JwtRefreshIntegrationTest extends WebTestCase
             'password' => $password
         ];
 
+        // Register user
         $this->client->request(
             'POST',
             '/api/register',
@@ -75,6 +76,16 @@ class JwtRefreshIntegrationTest extends WebTestCase
             json_encode($userData)
         );
 
+        $registerResponse = $this->client->getResponse();
+        if ($registerResponse->getStatusCode() !== Response::HTTP_CREATED) {
+            $this->fail(sprintf(
+                'Registration failed with status %d. Response: %s',
+                $registerResponse->getStatusCode(),
+                $registerResponse->getContent()
+            ));
+        }
+
+        // Login user
         $loginData = [
             'email' => $email,
             'password' => $password
@@ -89,7 +100,33 @@ class JwtRefreshIntegrationTest extends WebTestCase
             json_encode($loginData)
         );
 
-        return json_decode($this->client->getResponse()->getContent(), true);
+        $loginResponse = $this->client->getResponse();
+        if ($loginResponse->getStatusCode() !== Response::HTTP_OK) {
+            $this->fail(sprintf(
+                'Login failed with status %d. Response: %s',
+                $loginResponse->getStatusCode(),
+                $loginResponse->getContent()
+            ));
+        }
+
+        $responseContent = $loginResponse->getContent();
+        $tokens = json_decode($responseContent, true);
+        
+        if ($tokens === null) {
+            $this->fail(sprintf(
+                'Failed to decode login response JSON. Raw response: %s',
+                $responseContent
+            ));
+        }
+
+        if (!isset($tokens['token']) || !isset($tokens['refresh_token'])) {
+            $this->fail(sprintf(
+                'Login response missing required tokens. Response: %s',
+                $responseContent
+            ));
+        }
+
+        return $tokens;
     }
 
     /**
