@@ -50,6 +50,10 @@ jobs:
           coverage: none
 
       - name: Install backend dependencies (Symfony)
+        env:
+          DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
+          MONGODB_URL: "mongodb://localhost:27017"
+          MONGODB_DB: ycorner-chat
         run: |
           cd backend
           composer install
