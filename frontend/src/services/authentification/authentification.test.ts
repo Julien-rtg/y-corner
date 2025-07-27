@@ -46,7 +46,7 @@ describe('AuthentificationService', () => {
 
   describe('login', () => {
     it('should login successfully and store user data in localStorage', async () => {
-      const username = 'testuser@example.com';
+      const email = 'testuser@example.com';
       const password = 'password123';
       const mockResponse = {
         data: {
@@ -58,11 +58,11 @@ describe('AuthentificationService', () => {
       
       mockedAxios.post.mockResolvedValueOnce(mockResponse);
       
-      const result = await authService.login(username, password);
+      const result = await authService.login(email, password);
       
       expect(mockedAxios.post).toHaveBeenCalledWith(
         `${API_URL}/api/login_check`,
-        { username, password }
+        { email, password }
       );
       expect(result).toBe(true);
       expect(localStorage.getItem('token')).toBe('fake-token-123');
@@ -71,16 +71,16 @@ describe('AuthentificationService', () => {
     });
 
     it('should throw an error when login fails', async () => {
-      const username = 'testuser@example.com';
+      const email = 'testuser@example.com';
       const password = 'wrong-password';
       const errorResponse = new Error('Request failed');
       
       mockedAxios.post.mockRejectedValueOnce(errorResponse);
       
-      await expect(authService.login(username, password)).rejects.toThrow();
+      await expect(authService.login(email, password)).rejects.toThrow();
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'http://localhost:8000/api/login_check',
-        { username, password }
+        { email, password }
       );
       expect(localStorage.getItem('token')).toBeNull();
     });
