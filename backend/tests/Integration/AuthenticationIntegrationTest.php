@@ -69,7 +69,7 @@ class AuthenticationIntegrationTest extends WebTestCase
         }
     }
 
-    public function testSuccessfulRegistration(): void
+    public function testSuccessfullRegistration(): void
     {
         $userData = [
             'email' => 'test@example.com',
