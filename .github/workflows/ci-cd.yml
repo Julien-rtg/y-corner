@@ -54,6 +54,9 @@ jobs:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
           MONGODB_URL: "mongodb://localhost:27017"
           MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+          JWT_PASSPHRASE: ""
         run: |
           cd backend
           composer install
@@ -63,6 +66,9 @@ jobs:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
           MONGODB_URL: "mongodb://localhost:27017"
           MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+          JWT_PASSPHRASE: ""
         run: |
           cd backend
           php bin/console doctrine:database:create --env=test
@@ -73,6 +79,9 @@ jobs:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
           MONGODB_URL: "mongodb://localhost:27017"
           MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+          JWT_PASSPHRASE: ""
         run: |
           cd backend
           php bin/phpunit
