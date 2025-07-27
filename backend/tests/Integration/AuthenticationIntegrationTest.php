@@ -69,9 +69,6 @@ class AuthenticationIntegrationTest extends WebTestCase
         }
     }
 
-    /**
-     * Test successful user registration
-     */
     public function testSuccessfulRegistration(): void
     {
         $userData = [
@@ -113,9 +110,6 @@ class AuthenticationIntegrationTest extends WebTestCase
         $this->assertTrue(strlen($user->getPassword()) > 50);
     }
 
-    /**
-     * Test registration with missing required fields
-     */
     public function testRegistrationWithMissingFields(): void
     {
         $incompleteData = [
@@ -142,9 +136,6 @@ class AuthenticationIntegrationTest extends WebTestCase
         $this->assertNull($user);
     }
 
-    /**
-     * Test registration with invalid birth date format
-     */
     public function testRegistrationWithInvalidBirthDate(): void
     {
         $userData = [
