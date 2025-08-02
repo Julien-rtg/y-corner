@@ -192,3 +192,9 @@ Toutes les modifications apportées au projet YCorner sont consignées dans ce f
 
 ### Sécurité
 - Mise à jour des dépendances critiques
+
+## [v1.7.1] – 2025-08-02 
+
+### Corrigé
+- Amélioration des tests
+- Amélioration de l'ui et du responsive
