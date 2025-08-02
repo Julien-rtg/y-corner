@@ -18,6 +18,7 @@ security:
                 check_path: /api/login_check # or, if you have defined a route for your login path, the route name you used
                 success_handler: app.jwt_authentication_success_handler
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                username_path: email
             jwt: ~
             refresh_jwt:
                 check_path: /api/token/refresh # or, you may use the `api_refresh_token` route name
@@ -44,8 +45,9 @@ security:
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
-        - { path: ^/api/equipment, roles: IS_AUTHENTICATED_FULLY }
-
+        - { path: ^/api/users/\d+/basic-info, roles: PUBLIC_ACCESS }
+        - { path: ^/api/contact, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

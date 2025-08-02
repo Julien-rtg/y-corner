@@ -63,6 +63,38 @@ export class UserService {
       throw error;
     }
   }
+  
+  async getUserBasicInfo(userId: number): Promise<{ id: number; firstName: string; lastName: string }> {
+    try {
+      const endpoint = `/api/users/${userId}/basic-info`;
+      
+      const data = await api<{ id: number; firstName: string; lastName: string }>(
+        endpoint,
+        {
+          method: 'GET',
+        },
+        this.apiUrl
+      );
+
+      return data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des informations basiques de l\'utilisateur:', error);
+      
+      Sentry.captureException(error, {
+        tags: {
+          service: 'UserService',
+          method: 'getUserBasicInfo',
+          endpoint: `/api/users/${userId}/basic-info`
+        },
+        extra: {
+          userId: userId,
+          apiUrl: this.apiUrl
+        }
+      });
+      
+      throw error;
+    }
+  }
 
   async updateUser(userId: number, userData: UserUpdateData): Promise<User> {
     try {

@@ -46,7 +46,7 @@ export class AuthentificationService {
     public async login(username: string, password: string): Promise<any> {
         try {
             return axios.post(`${this.apiUrl}/api/login_check`, {
-                username: username,
+                email: username,
                 password: password
             })
                 .then(function (response) {

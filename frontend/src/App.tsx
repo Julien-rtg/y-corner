@@ -4,6 +4,8 @@ import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import ResetPassword from '@/pages/auth/ResetPassword';
 import { useEffect, useState, createContext } from 'react';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AuthentificationService } from '@/services/authentification/authentification';
 import EquipmentDetail from "@/pages/main/equipment-detail/Equipment-detail";
 import Home from "@/pages/main/home/Home";
@@ -29,13 +31,38 @@ export const UnreadMessagesContext = createContext<{
 
 const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAuthenticated: boolean }) => {
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/reset-password';
-  
+
+  if (!isAuthenticated && !isAuthPage) {
+    return <Navigate to="/login" />;
+  }
+
+  const showSidebar = isAuthenticated && !isAuthPage;
+
   return (
-    <div className="flex">
-      {isAuthenticated && !isAuthPage && <Sidebar />}
-      <div className={`${isAuthenticated && !isAuthPage ? 'ml-80' : ''} flex-1`}>
-        {children}
+    <div className={`flex h-screen bg-background`}>
+      {showSidebar && <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />}
+      
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {showSidebar && (
+          <header className="lg:hidden flex items-center justify-between p-4 border-b">
+            <Button variant="outline" onClick={() => setIsSidebarOpen(true)} aria-label="Ouvrir le menu">
+              <Menu className="h-6 w-6" />
+            </Button>
+            <h2 className="text-lg font-semibold">YCorner</h2>
+          </header>
+        )}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

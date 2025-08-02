@@ -7,7 +7,7 @@ on:
       - dev
   pull_request:
     branches:
-      - develop
+      - dev
 
 jobs:
   # 1. Lancer les tests et la construction
@@ -54,13 +54,41 @@ jobs:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
           MONGODB_URL: "mongodb://localhost:27017"
           MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt-test/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt-test/public.pem"
+          JWT_PASSPHRASE: ""
         run: |
           cd backend
           composer install
+
+      - name: Generate JWT keys for testing
+        run: |
+          cd backend
+          mkdir -p config/jwt-test
+          openssl genrsa -out config/jwt-test/private.pem 4096
+          openssl rsa -pubout -in config/jwt-test/private.pem -out config/jwt-test/public.pem
+
+      - name: Setup test database
+        env:
+          DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
+          MONGODB_URL: "mongodb://localhost:27017"
+          MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt-test/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt-test/public.pem"
+          JWT_PASSPHRASE: ""
+        run: |
+          cd backend
           php bin/console doctrine:database:create --env=test
           php bin/console doctrine:schema:update --force --env=test
 
       - name: Run backend tests (Symfony)
+        env:
+          DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
+          MONGODB_URL: "mongodb://localhost:27017"
+          MONGODB_DB: ycorner-chat
+          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt-test/private.pem"
+          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt-test/public.pem"
+          JWT_PASSPHRASE: ""
         run: |
           cd backend
           php bin/phpunit

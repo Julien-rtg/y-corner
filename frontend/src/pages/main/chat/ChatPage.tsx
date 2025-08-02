@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, User } from 'lucide-react';
 import Chat from '@/components/chat/Chat';
@@ -6,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { getToken, getUser } from '@/utils/getToken';
 import { api } from '@/lib/api';
 import chatService from '@/services/chat/chat';
+import userService from '@/services/user/user';
 import { UnreadMessagesContext } from '@/App';
+import { User as UserInterface } from '@/interfaces/User.interface';
 
 interface Message {
     id: string;
@@ -22,6 +25,7 @@ interface Conversation {
     messages: Message[];
     lastMessageDate: string;
     unreadCount?: number;
+    recipientDetails?: UserInterface;
 }
 
 function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
@@ -32,6 +36,15 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobileView(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchConversationsAndUnreadCounts = async () => {
         if (!user || !user.id) return;
@@ -52,7 +65,30 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                 unreadCount: unreadResponse.unreadCounts[conv.recipientId] || 0
             }));
 
-            setConversations(conversationsWithUnread);
+            const conversationsWithDetails = await Promise.all(
+                conversationsWithUnread.map(async (conv) => {
+                    try {
+                        if (conv.recipientId) {
+                            const basicInfo = await userService.getUserBasicInfo(parseInt(conv.recipientId));
+                            // Create a minimal user object with the basic info
+                            const recipientDetails: UserInterface = {
+                                id: basicInfo.id,
+                                firstName: basicInfo.firstName,
+                                lastName: basicInfo.lastName,
+                                email: `utilisateur-${conv.recipientId}@exemple.com`, // Placeholder email
+                                roles: ["ROLE_USER"]
+                            };
+                            return { ...conv, recipientDetails };
+                        }
+                        return conv;
+                    } catch (error) {
+                        console.error(`Erreur lors de la récupération des détails pour l'utilisateur ${conv.recipientId}:`, error);
+                        return conv;
+                    }
+                })
+            );
+
+            setConversations(conversationsWithDetails);
             setLoading(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -90,25 +126,51 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
     }, [lastJsonMessage]);
 
     const handleGoBack = () => {
-        navigate(-1);
+        if (isMobileView && selectedConversation) {
+            setSelectedConversation(null);
+        } else {
+            navigate(-1);
+        }
     };
 
-    const selectConversation = (conversation: Conversation) => {
-        setSelectedConversation(conversation);
+    const selectConversation = async (conversation: Conversation) => {
+        try {
+            if (!conversation.recipientDetails && conversation.recipientId) {
+                const basicInfo = await userService.getUserBasicInfo(parseInt(conversation.recipientId));
+                // Create a minimal user object with the basic info
+                const recipientDetails: UserInterface = {
+                    id: basicInfo.id,
+                    firstName: basicInfo.firstName,
+                    lastName: basicInfo.lastName,
+                    email: `utilisateur-${conversation.recipientId}@exemple.com`, // Placeholder email
+                    roles: ["ROLE_USER"]
+                };
+                conversation = { ...conversation, recipientDetails };
+                setConversations(prevConversations => {
+                    return prevConversations.map(conv => 
+                        conv.id === conversation.id ? { ...conv, recipientDetails } : conv
+                    );
+                });
+            }
+            
+            setSelectedConversation(conversation);
 
-        if (user && user.id && conversation.recipientId) {
-            chatService.markMessagesAsSeen(parseInt(conversation.recipientId), user.id);
+            if (user && user.id && conversation.recipientId) {
+                chatService.markMessagesAsSeen(parseInt(conversation.recipientId), user.id);
 
-            setConversations(prevConversations => {
-                const updatedConversations = prevConversations.map(conv =>
-                    conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
-                );
-                if (conversation.unreadCount && conversation.unreadCount > 0) {
-                    refreshUnreadCount();
-                }
+                setConversations(prevConversations => {
+                    const updatedConversations = prevConversations.map(conv =>
+                        conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
+                    );
+                    if (conversation.unreadCount && conversation.unreadCount > 0) {
+                        refreshUnreadCount();
+                    }
 
-                return updatedConversations;
-            });
+                    return updatedConversations;
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération des détails du destinataire:', error);
         }
     };
 
@@ -164,9 +226,12 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                             <p className="text-muted-foreground">Vous n'avez pas encore de conversations. Contactez un vendeur pour démarrer une discussion.</p>
                         </div>
                     ) : (
-                        <div className="flex gap-6">
+                        <div className="flex flex-col md:flex-row gap-6">
                             {/* Left side - Conversations list */}
-                            <div className="w-1/3 space-y-4">
+                            <div className={cn("space-y-4 md:w-1/3", {
+                                'hidden md:block': selectedConversation,
+                                'w-full': !selectedConversation
+                            })}>
                                 {conversations.map((conversation) => (
                                     <div
                                         key={conversation.id}
@@ -180,7 +245,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center">
-                                                        <h3 className="font-semibold truncate">Utilisateur {conversation.recipientId}</h3>
+                                                        <h3 className="font-semibold truncate">{conversation.recipientDetails ? `${conversation.recipientDetails.firstName} ${conversation.recipientDetails.lastName}` : `Chargement...`}</h3>
                                                         {(conversation.unreadCount ?? 0) > 0 && (
                                                             <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full ml-2">
                                                                 {conversation.unreadCount}
@@ -195,7 +260,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                             </div>
 
                             {/* Right side - Selected conversation */}
-                            <div className="w-2/3">
+                            <div className={cn("md:w-2/3", { 'hidden md:block': !selectedConversation, 'w-full': selectedConversation })}>
                                 {selectedConversation ? (
                                     <div className="bg-card shadow rounded-xl p-6">
                                         <div className="mb-4 pb-3 border-b">
@@ -204,7 +269,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                                                     <User className="h-6 w-6 text-primary" />
                                                 </div>
                                                 <div>
-                                                    <h2 className="font-semibold">Utilisateur {selectedConversation.recipientId}</h2>
+                                                    <h2 className="font-semibold">{selectedConversation.recipientDetails ? `${selectedConversation.recipientDetails.firstName} ${selectedConversation.recipientDetails.lastName}` : `Chargement...`}</h2>
                                                 </div>
                                             </div>
                                         </div>

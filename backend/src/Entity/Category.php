@@ -22,15 +22,15 @@ class Category
     private ?string $name = null;
 
     /**
-     * @var Collection<int, equipment>
+     * @var Collection<int, Equipment>
      */
-    #[ORM\ManyToMany(targetEntity: equipment::class, inversedBy: 'categories')]
+    #[ORM\ManyToMany(targetEntity: Equipment::class, inversedBy: 'categories')]
     private Collection $equipment;
 
     /**
      * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'categories')]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoriteCategories')]
     private Collection $favoritedBy;
 
     public function __construct()
