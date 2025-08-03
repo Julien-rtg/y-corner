@@ -54,7 +54,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                   'w-full justify-start',
                   location.pathname === item.path ? 'bg-accent' : ''
                 )}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  setIsSidebarOpen(false);
+                }}
               >
                 <item.icon className="mr-2 h-4 w-4" />
                 <div className="flex items-center justify-between w-full">
