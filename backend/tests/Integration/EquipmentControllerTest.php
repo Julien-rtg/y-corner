@@ -673,6 +673,41 @@ class EquipmentControllerTest extends WebTestCase
         
         $tempId = $tempEquipment->getId();
         
+        // Create test image files and entities
+        $testImages = [];
+        $imagePaths = [];
+        $uploadsDir = __DIR__ . '/../../public/uploads/test';
+        
+        // Create the uploads directory if it doesn't exist
+        if (!is_dir($uploadsDir)) {
+            mkdir($uploadsDir, 0777, true);
+        }
+        
+        // Create two test image files with simple content
+        for ($i = 1; $i <= 2; $i++) {
+            $imagePath = $uploadsDir . '/test_image_' . $i . '.txt';
+            $imagePaths[] = $imagePath;
+            
+            // Create a simple text file as a mock image
+            file_put_contents($imagePath, 'This is a test image file ' . $i);
+            
+            // Create Image entity
+            $imageEntity = new Image();
+            $imageEntity->setContent('/uploads/test/test_image_' . $i . '.txt');
+            $imageEntity->setEquipment($tempEquipment);
+            
+            $this->entityManager->persist($imageEntity);
+            $testImages[] = $imageEntity;
+        }
+        
+        $this->entityManager->flush();
+        
+        // Verify that the test images exist before deletion
+        foreach ($testImages as $image) {
+            $imagePath = __DIR__ . '/../../public' . $image->getContent();
+            $this->assertTrue(file_exists($imagePath), "Test image file does not exist: " . $imagePath);
+        }
+        
         $this->client->request(
             'DELETE',
             '/api/equipment/' . $tempId,
@@ -693,6 +728,26 @@ class EquipmentControllerTest extends WebTestCase
         // Verify the equipment was deleted
         $deletedEquipment = $this->entityManager->getRepository(Equipment::class)->find($tempId);
         $this->assertNull($deletedEquipment);
+        
+        // Verify the image entities were deleted
+        foreach ($testImages as $image) {
+            $imageId = $image->getId();
+            $deletedImage = $this->entityManager->getRepository(Image::class)->find($imageId);
+            $this->assertNull($deletedImage, "Image entity was not deleted from database");
+        }
+        
+        // Verify the image files were deleted from the filesystem
+        foreach ($testImages as $image) {
+            $imagePath = __DIR__ . '/../../public' . $image->getContent();
+            $this->assertFalse(file_exists($imagePath), "Image file was not deleted from filesystem: " . $imagePath);
+        }
+        
+        // Clean up any remaining test files if they exist
+        foreach ($imagePaths as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
     }
 
     public function testDeleteNonExistentEquipment(): void
@@ -827,38 +882,53 @@ class EquipmentControllerTest extends WebTestCase
     
     public function testErrorHandlingWithException(): void
     {
-        // Instead of using a mock that throws an exception, let's test the error handling
-        // by sending a request that will cause an exception in the controller's error handling
-        // We'll use the executeWithErrorHandling method indirectly by calling an endpoint
-        // with data that will cause an exception during processing
+        // Test the general exception branch of the catch block in executeWithErrorHandling
+        // We'll use reflection to access and test the private executeWithErrorHandling method directly
         
-        // Create a request with invalid data that will cause an exception in processing
-        // but not in the initial JSON parsing
-        $invalidData = json_encode([
-            'name' => 'Test Equipment',
-            'description' => 'This will cause an exception',
-            'price' => 'not-a-number', // This will cause a type error when setting the price
-            'city' => 'Test City',
-            'images' => ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==']
-        ]);
+        // Get the controller instance from the container
+        $controller = $this->client->getContainer()->get('App\\Controller\\EquipmentController');
         
-        $this->client->request(
-            'POST',
-            '/api/equipment',
-            [],
-            [],
-            [
-                'HTTP_AUTHORIZATION' => 'Bearer ' . $this->token,
-                'CONTENT_TYPE' => 'application/json'
-            ],
-            $invalidData
-        );
+        // Use reflection to make the private method accessible
+        $reflectionMethod = new \ReflectionMethod('App\\Controller\\EquipmentController', 'executeWithErrorHandling');
+        $reflectionMethod->setAccessible(true);
         
-        $response = $this->client->getResponse();
+        // Create a callback that will throw a generic exception (not an InvalidArgumentException)
+        $exceptionCallback = function() {
+            throw new \Exception('Test exception');
+        };
         
-        // The controller should catch the exception and return a 500 error
+        // Call the method directly with our callback that throws an exception
+        $response = $reflectionMethod->invoke($controller, $exceptionCallback, ['test' => 'context']);
+        
+        // Verify that the response is correct for a generic exception
         $this->assertEquals(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Une erreur est survenue', $responseData['message']);
+    }
+    
+    public function testErrorHandlingWithInvalidArgumentException(): void
+    {
+        // Test the InvalidArgumentException branch of the catch block
+        // We'll use reflection to access and test the private executeWithErrorHandling method directly
+        
+        // Get the controller instance from the container
+        $controller = $this->client->getContainer()->get('App\\Controller\\EquipmentController');
+        
+        // Use reflection to make the private method accessible
+        $reflectionMethod = new \ReflectionMethod('App\\Controller\\EquipmentController', 'executeWithErrorHandling');
+        $reflectionMethod->setAccessible(true);
+        
+        // Create a callback that will throw an InvalidArgumentException
+        $exceptionCallback = function() {
+            throw new \InvalidArgumentException('Invalid argument test message');
+        };
+        
+        // Call the method directly with our callback that throws an InvalidArgumentException
+        $response = $reflectionMethod->invoke($controller, $exceptionCallback, ['test' => 'context']);
+        
+        // Verify that the response is correct for an InvalidArgumentException
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertEquals('Invalid argument test message', $responseData['message']);
     }
 }
