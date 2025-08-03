@@ -94,12 +94,18 @@ class EquipmentController extends AbstractController
             $responseData = [];
             
             foreach ($datas as $data) {
-                if (!isset($data['image'])) {
-                    throw new \InvalidArgumentException('Image requise pour chaque équipement');
+                if (!isset($data['images']) || !is_array($data['images']) || empty($data['images'])) {
+                    if (!isset($data['image'])) {
+                        throw new \InvalidArgumentException('Au moins une image est requise pour chaque équipement');
+                    }
+                    $imageData = $data['image'];
+                    $imagePaths = [$this->saveBase64Image($imageData)];
+                } else {
+                    $imagePaths = [];
+                    foreach ($data['images'] as $imageData) {
+                        $imagePaths[] = $this->saveBase64Image($imageData);
+                    }
                 }
-                
-                $imageData = $data['image'];
-                $imagePath = $this->saveBase64Image($imageData);
                 
                 $equipment = new Equipment();
                 $equipment->setName($data['name'] ?? '');
@@ -135,15 +141,21 @@ class EquipmentController extends AbstractController
                 
                 $entityManager->persist($equipment);
                 
-                $image = new Image();
-                $image->setContent($imagePath);
-                $image->setEquipment($equipment);
-                $entityManager->persist($image);
+                // Save all images for this equipment
+                foreach ($imagePaths as $imagePath) {
+                    $image = new Image();
+                    $image->setContent($imagePath);
+                    $image->setEquipment($equipment);
+                    $entityManager->persist($image);
+                }
+                
+                // Use the first image path for the response
+                $firstImagePath = !empty($imagePaths) ? $imagePaths[0] : '';
                 
                 $responseData[] = [
                     'id' => $equipment->getId(),
                     'name' => $equipment->getName(),
-                    'image_path' => $imagePath
+                    'image_path' => $firstImagePath
                 ];
             }
             

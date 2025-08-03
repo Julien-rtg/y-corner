@@ -425,7 +425,7 @@ function Equipment() {
                       {formData.images.map((image) => (
                         <div key={image.id} className="relative aspect-video bg-muted rounded-md overflow-hidden">
                           <img 
-                            src={`${import.meta.env.VITE_API_URL}${image.content}`} 
+                            src={image.content.startsWith('data:') ? image.content : `${import.meta.env.VITE_API_URL}${image.content}`} 
                             alt="Équipement" 
                             className="w-full h-full object-cover" 
                           />

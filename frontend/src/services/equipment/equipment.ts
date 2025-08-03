@@ -182,7 +182,7 @@ export class EquipmentService {
                             id: category.id,
                             name: category.name
                         })),
-                        image: equipmentData.images[0].content,
+                        images: equipmentData.images.map(image => image.content),
                         user_id: user?.id
                     }])
                 },
