@@ -61,6 +61,15 @@ jobs:
           cd backend
           composer install
 
+      - name: Run PHPStan (backend static analysis)
+        run: |
+          cd backend
+          if [ -f vendor/bin/phpstan ]; then
+            vendor/bin/phpstan analyse --no-progress
+          else
+            echo "PHPStan not found. Install it with 'composer require --dev phpstan/phpstan'" && exit 1
+          fi
+
       - name: Generate JWT keys for testing
         run: |
           cd backend
@@ -93,10 +102,24 @@ jobs:
           cd backend
           php bin/phpunit
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
       - name: Install frontend dependencies (React)
         run: |
           cd frontend
           npm install
+
+      - name: Run ESLint (frontend static analysis)
+        run: |
+          cd frontend
+          if npm run | grep -q " lint"; then
+            npm run lint
+          else
+            echo "No lint script found in package.json. Add one like: \n\n\"lint\": \"eslint .\"" && exit 1
+          fi
 
       - name: Run frontend tests (React)
         run: |
