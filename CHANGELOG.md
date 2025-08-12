@@ -218,3 +218,7 @@ Toutes les modifications apportées au projet YCorner sont consignées dans ce f
 ### Ajouté
 - PHPStan
 - ESlint
+
+## [v1.9.1] – 2025-08-12
+### Corrigé
+- Fix PHPStan dans la pipeline
