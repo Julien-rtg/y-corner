@@ -4,7 +4,7 @@ import { Home, User, LogOut, Package, Heart, PlusCircle, MailOpen, MessageCircle
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useContext } from 'react';
-import { UnreadMessagesContext } from '@/App';
+import UnreadMessagesContext from '@/context/UnreadMessagesContext';
 
 interface SidebarProps {
   isSidebarOpen: boolean;

@@ -36,7 +36,7 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate('/login');
       }, 5000);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Échec de l\'envoi des instructions de réinitialisation. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
