@@ -41,7 +41,8 @@ class JwtRefreshIntegrationTest extends WebTestCase
     {
         $testEmails = [
             'refreshtest@example.com',
-            'tokentest@example.com'
+            'tokentest@example.com',
+            'multirefresh@example.com'
         ];
 
         foreach ($testEmails as $email) {

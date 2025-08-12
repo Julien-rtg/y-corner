@@ -8,7 +8,7 @@ import { getToken, getUser } from '@/utils/getToken';
 import { api } from '@/lib/api';
 import chatService from '@/services/chat/chat';
 import userService from '@/services/user/user';
-import { UnreadMessagesContext } from '@/App';
+import { UnreadMessagesContext } from '@/context/UnreadMessagesContext';
 import { User as UserInterface } from '@/interfaces/User.interface';
 
 interface Message {

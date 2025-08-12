@@ -3,7 +3,7 @@ import { Toaster } from 'sonner';
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import ResetPassword from '@/pages/auth/ResetPassword';
-import { useEffect, useState, createContext } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthentificationService } from '@/services/authentification/authentification';
@@ -20,14 +20,7 @@ import Wishlist from './pages/main/wishlist/Wishlist';
 import Contact from './pages/main/contact/Contact';
 import { init } from "@sentry/react";
 import Sidebar from '@/components/sidebar/Sidebar';
-
-export const UnreadMessagesContext = createContext<{
-  unreadCount: number;
-  refreshUnreadCount: () => Promise<void>;
-}>({
-  unreadCount: 0,
-  refreshUnreadCount: async () => { }
-});
+import UnreadMessagesContext from '@/context/UnreadMessagesContext';
 
 const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAuthenticated: boolean }) => {
   const location = useLocation();
@@ -69,7 +62,7 @@ const Layout = ({ children, isAuthenticated }: { children: React.ReactNode, isAu
 };
 
 function App() {
-  const auth = new AuthentificationService();
+  const auth = useMemo(() => new AuthentificationService(), []);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -82,9 +75,11 @@ function App() {
     sendDefaultPii: true
   });
 
-  const WS_URL = user && user.id ? import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString()) : '';
+  const WS_URL: string | null = user && user.id
+    ? import.meta.env.VITE_WEBSOCKET_URL.replace('{id}', user.id.toString())
+    : null;
 
-  const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = WS_URL ? useWebSocket(
+  const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = useWebSocket(
     WS_URL,
     {
       share: false,
@@ -98,26 +93,28 @@ function App() {
       onClose: (event) => console.log('WebSocket connection closed', event),
       onError: (error) => console.error('WebSocket error:', error),
     },
-  ) : {};
+  );
 
-  const refreshUnreadCount = async () => {
-    if (user && user.id) {
+  const userId = useMemo(() => user?.id, [user?.id]);
+
+  const refreshUnreadCount = useCallback(async () => {
+    if (userId) {
       try {
-        const response = await chatService.getUnreadMessageCount(user.id);
+        const response = await chatService.getUnreadMessageCount(userId);
         setUnreadCount(response.totalUnread);
       } catch (error) {
         console.error('Error fetching unread count:', error);
       }
     }
-  };
+  }, [userId]);
 
-  const refreshUnreadCountLightweight = async () => {
-    if (user && user.id) {
+  const refreshUnreadCountLightweight = useCallback(async () => {
+    if (userId) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-        const response = await chatService.getUnreadMessageCount(user.id, controller.signal);
+        const response = await chatService.getUnreadMessageCount(userId, controller.signal);
         clearTimeout(timeoutId);
 
         setUnreadCount(response.totalUnread);
@@ -127,7 +124,7 @@ function App() {
         }
       }
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (lastJsonMessage) {
@@ -135,7 +132,7 @@ function App() {
         refreshUnreadCountLightweight();
       }
     }
-  }, [lastJsonMessage]);
+  }, [lastJsonMessage, refreshUnreadCountLightweight]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -157,7 +154,7 @@ function App() {
     };
 
     checkAuth();
-  }, []);
+  }, [auth, refreshUnreadCount]);
 
   if (isLoading) {
     return null;

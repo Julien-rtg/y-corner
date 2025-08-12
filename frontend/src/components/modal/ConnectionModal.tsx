@@ -47,7 +47,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
       }
       
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Identifiants incorrects');
     } finally {
       setIsLoading(false);

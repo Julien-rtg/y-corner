@@ -30,7 +30,7 @@ export default function Login() {
             await auth.login(data.email, data.password);
             window.location.href = '/';
             toast.success('Connexion réussie !');
-        } catch (error) {
+        } catch (_error) {
             toast.error('Échec de connexion. Veuillez réessayer.');
         } finally {
             setIsLoading(false);

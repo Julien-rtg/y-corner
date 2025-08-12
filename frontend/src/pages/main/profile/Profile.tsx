@@ -11,6 +11,8 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const navigate = useNavigate();
+  const authService = new AuthentificationService();
   const [formData, setFormData] = useState<UserUpdateData>({
     firstName: '',
     lastName: '',
@@ -21,9 +23,6 @@ const Profile = () => {
     postalCode: undefined,
     birthDate: '',
   });
-
-  const navigate = useNavigate();
-  const auth = new AuthentificationService();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -81,24 +80,22 @@ const Profile = () => {
 
     if (!user) return;
 
+    const emailChanged = user.email !== formData.email;
+
     try {
       setIsLoading(true);
       const updatedUser = await userService.updateUser(user.id, formData);
       setUser(updatedUser);
       setIsEditing(false);
-      toast.success('Profil mis à jour avec succès');
-
-      const storedUser = getUser();
-      localStorage.setItem('user', JSON.stringify({
-        ...storedUser,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        email: updatedUser.email,
-        address: updatedUser.address,
-        city: updatedUser.city,
-        country: updatedUser.country,
-        postalCode: updatedUser.postalCode,
-      }));
+      
+      if (emailChanged) {
+        toast.success('Profil mis à jour avec succès. Vous allez être déconnecté en raison du changement d\'email.');
+        setTimeout(() => {
+          authService.logout();
+        }, 2000);
+      } else {
+        toast.success('Profil mis à jour avec succès');
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du profil:', error);
       toast.error('Impossible de mettre à jour votre profil');
@@ -114,7 +111,7 @@ const Profile = () => {
       setIsLoading(true);
       await userService.deleteUser(user.id);
       toast.success('Votre compte a été supprimé');
-      auth.logout();
+      authService.logout();
       navigate('/login');
     } catch (error) {
       console.error('Erreur lors de la suppression du compte:', error);

@@ -47,7 +47,10 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, mbstring, mongodb-1.21.0
-          coverage: none
+          coverage: pcov
+          ini-values: |
+            pcov.enabled=1
+            pcov.directory=backend/src
 
       - name: Install backend dependencies (Symfony)
         env:
@@ -60,6 +63,15 @@ jobs:
         run: |
           cd backend
           composer install
+
+      - name: Run PHPStan (backend static analysis)
+        run: |
+          cd backend
+          if [ -f vendor/bin/phpstan ]; then
+            vendor/bin/phpstan analyse src --no-progress
+          else
+            echo "PHPStan not found. Install it with 'composer require --dev phpstan/phpstan'" && exit 1
+          fi
 
       - name: Generate JWT keys for testing
         run: |
@@ -81,7 +93,7 @@ jobs:
           php bin/console doctrine:database:create --env=test
           php bin/console doctrine:schema:update --force --env=test
 
-      - name: Run backend tests (Symfony)
+      - name: Run backend tests (Symfony with coverage)
         env:
           DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/ycorner_test?serverVersion=8.0.37"
           MONGODB_URL: "mongodb://localhost:27017"
@@ -91,12 +103,27 @@ jobs:
           JWT_PASSPHRASE: ""
         run: |
           cd backend
-          php bin/phpunit
+          mkdir -p build/logs
+          php bin/phpunit --coverage-clover build/logs/clover.xml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
       - name: Install frontend dependencies (React)
         run: |
           cd frontend
           npm install
+
+      - name: Run ESLint (frontend static analysis)
+        run: |
+          cd frontend
+          if npm run | grep -q " lint"; then
+            npm run lint
+          else
+            echo "No lint script found in package.json. Add one like: \n\n\"lint\": \"eslint .\"" && exit 1
+          fi
 
       - name: Run frontend tests (React)
         run: |

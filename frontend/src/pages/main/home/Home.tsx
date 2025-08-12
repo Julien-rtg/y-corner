@@ -20,15 +20,15 @@ import * as Sentry from '@sentry/react';
 function Home() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "price_asc" | "price_desc">("name_asc");
   const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [categories, setCategories] = useState<string[]>(["Tous"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [locations, setLocations] = useState<string[]>(["All"]);
-  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [locations, setLocations] = useState<string[]>(["Tous"]);
+  const [selectedLocation, setSelectedLocation] = useState("Tous");
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -54,10 +54,10 @@ function Home() {
         setEquipment(data);
         
         const uniqueCategories = new Set<string>();
-        uniqueCategories.add("All");
+        uniqueCategories.add("Tous");
         
         const uniqueLocations = new Set<string>();
-        uniqueLocations.add("All");
+        uniqueLocations.add("Tous");
         let highestPrice = 0;
         
         data.forEach(item => {
@@ -101,14 +101,14 @@ function Home() {
 
   const filteredEquipment = equipment
     .filter(item => {
-      const matchesCategory = selectedCategory === "All" || 
+      const matchesCategory = selectedCategory === "Tous" || 
         item.categories.some(category => category.name === selectedCategory);
       
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesPrice = item.price >= priceRange[0] && item.price <= priceRange[1];
       
-      const matchesLocation = selectedLocation === "All" || item.city === selectedLocation;
+      const matchesLocation = selectedLocation === "Tous" || item.city === selectedLocation;
       
       return matchesCategory && matchesSearch && matchesPrice && matchesLocation;
     })

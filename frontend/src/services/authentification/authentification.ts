@@ -5,10 +5,10 @@ import { API_URL_BASE } from '@/constants/api';
 function getApiUrl(): string {
     try {
         return process.env.VITE_API_URL as string;
-    } catch (error) {
+    } catch (_error) {
         try {
             return API_URL_BASE;
-        } catch (error) {
+        } catch (_error) {
             return 'http://localhost:8080';
         }
     }
