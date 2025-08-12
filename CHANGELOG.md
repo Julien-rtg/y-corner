@@ -198,3 +198,23 @@ Toutes les modifications apportées au projet YCorner sont consignées dans ce f
 ### Corrigé
 - Amélioration des tests
 - Amélioration de l'ui et du responsive
+
+
+## [v1.8.0] – 2025-08-03
+
+### Ajouté
+- Test d'intégration Websocket + MongoDB
+
+### Corrigé
+- Modification Email sur le profil
+- Ajout plusieurs images équipements
+- Fermeture du sidebar après action
+
+### Modifié
+- Nom des filtres sur la Home
+
+
+## [v1.9.0] – 2025-08-12
+### Ajouté
+- PHPStan
+- ESlint
