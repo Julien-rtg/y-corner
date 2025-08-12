@@ -68,7 +68,7 @@ jobs:
         run: |
           cd backend
           if [ -f vendor/bin/phpstan ]; then
-            vendor/bin/phpstan analyse --no-progress
+            vendor/bin/phpstan analyse src --no-progress
           else
             echo "PHPStan not found. Install it with 'composer require --dev phpstan/phpstan'" && exit 1
           fi
