@@ -11,6 +11,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 class RegistrationController extends AbstractController
 {
@@ -93,7 +94,7 @@ class RegistrationController extends AbstractController
             try {
                 $entityManager->persist($user);
                 $entityManager->flush();
-            } catch (UniqueConstraintViolationException $e) {
+            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
                 throw new \InvalidArgumentException('Un utilisateur avec cet email existe déjà');
             }
             
