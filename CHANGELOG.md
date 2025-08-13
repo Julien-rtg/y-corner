@@ -199,6 +199,11 @@ Toutes les modifications apportées au projet YCorner sont consignées dans ce f
 - PHPStan.
 - ESLint.
 
-### [v1.9.1] – 2025-08-11
+### [v1.9.2] – 2025-08-11
 ### Corrigé
-- Fix PHPStan dans la pipeline.
+- Fix PHPStan dans la pipeline
+
+## [v1.9.3] – 2025-08-13
+### Corrigé
+- Fix suppression d'un utilisateur lorsqu'il a des équipements
+

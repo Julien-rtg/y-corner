@@ -154,6 +154,18 @@ final class UserController extends AbstractController
                 throw new AccessDeniedException('Vous n\'avez pas les droits pour supprimer cet utilisateur');
             }
 
+            foreach ($user->getFavorites() as $favoriteEquipment) {
+                $user->removeFavorite($favoriteEquipment);
+            }
+            foreach ($user->getFavoriteCategories() as $favoriteCategory) {
+                $user->removeFavoriteCategory($favoriteCategory);
+            }
+
+            foreach ($user->getEquipment() as $equipment) {
+                $this->entityManager->remove($equipment);
+            }
+            $this->entityManager->flush();
+
             $this->entityManager->remove($user);
             $this->entityManager->flush();
             
