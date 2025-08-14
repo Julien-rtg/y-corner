@@ -204,6 +204,7 @@ Toutes les modifications apportées au projet YCorner sont consignées dans ce f
 - Fix PHPStan dans la pipeline
 
 ## [v1.9.3] – 2025-08-13
+### Ajouté
+- Readme
 ### Corrigé
 - Fix suppression d'un utilisateur lorsqu'il a des équipements
-

@@ -1,91 +1,115 @@
 # Ycorner
 
-## A propos
+### Installation
 
-Ycorner est un site de vente entre particulier d'article de sport
+#### Prérequis et versions
 
-## Versions utilisées
+- PHP 8.3
+- Composer
+- Node.js 20.x
+- npm 10.x ou yarn
+- MySQL ≥ 8 / MongoDB ≥ 5
+- Git
+- Symfony CLI (optionnel)
+- Docker (si utilisé)
 
-- Version utilisé avec symfony pour ce projet PHP 8.3.x
-- Version de symfony 6.4.x
+Pour utiliser le monitoring avec Sentry, créez un compte sur la plateforme et suivez les étapes pour les projets React et Symfony:
 
-## Mise en place de l'environnement de travail
+- Sentry: https://sentry.io/
 
-- Installez le gestionnaire de versions de fichiers GIT [https://git-scm.com/downloads](https://git-scm.com/downloads)
-- Installez l'environnement de développement pour PHP et MySQL
-- Installez le gestionnaire de dépendances de PHP : composer [https://getcomposer.org/download/](https://getcomposer.org/download/)
-- Installez l'interpréteur de commandes symfony (CLI Symfony)
+#### MongoDB (extension PHP)
 
-### Testez votre configuration
+1. Installer l’extension MongoDB pour PHP depuis: https://pecl.php.net/package/mongodb
+   - Sélectionner la version 1.21.1
+   - Choisir la build NTS ou TS selon votre configuration de PHP 8.3
+2. Ajouter la ligne suivante dans votre `php.ini`:
+   - `extension=mongodb`
+3. Décommenter également la ligne suivante pour MySQL:
+   - `extension=pdo_mysql`
 
-1. Ouvrez	votre terminal
-2. Tapez	la commande **git** et	assurez vous qu'il n'y a pas de message d'erreur particulier
-3. Tapez	la commande **php	-v** et	assurez vous que vous avez la version 8.3 au minimum
-4. Tapez	la commande **composer -v** et assurez vous qu'il n'y a pas de message d'erreur particulier
+#### xDebug
 
-## Installation projet
+1. Installer xDebug et le placer dans le dossier `ext` de votre installation PHP
+2. Ajouter la configuration suivante dans le `php.ini` (adapter le chemin si nécessaire):
 
-### Cloner le dépôt git distant en local
+```
+zend_extension="C:\\Program Files\\PHP-8.3\\ext\\php_xdebug.dll"
+xdebug.mode=coverage
+xdebug.start_with_request=yes
+```
 
-Dans votre terminal, positionnez vous dans le bon répertoire est cloner le dépot git en local
+### Cloner le projet
 
-### Installer les dépendances
+Cloner le projet dans le répertoire voulu:
 
-Installer les dépendances avec composer à partir du fichier composer.lock
+```
+git clone git@github.com:Julien-rtg/y-corner.git
+```
+
+### JWT (Backend)
+
+Créer le dossier `backend/config/jwt`, puis générer les clés:
+
+1. Générer la clé privée:
+
+```
+openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
+```
+
+2. Générer la clé publique:
+
+```
+openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
+```
+
+3. Renseigner la variable `JWT_PASSPHRASE` dans le fichier `.env.local`
+
+### Paramétrer le backend
+
+Dupliquer le `.env` pour créer `.env.local` et `.env.test.local` (tests), puis renseigner les variables d’environnement suivantes:
+
+- `DB_USER` = Utilisateur de la base
+- `DB_PASSWORD` = Mot de passe de la base
+- `SYMFONY_APP_SECRET` = Clé privée de l’app
+- `JWT_PASSPHRASE` = Passphrase de JWT
+- `DATABASE_URL` = URL de la base
+- `MAILER_EMAIL` = Email utilisé pour l’envoi
+- `MAILER_PASSWORD` = Mot de passe utilisé par le mailer
+- `MAILER_DSN` = DSN du mailer
+- `MONGODB_URL` = URL de la base MongoDB
+- `MONGODB_DB` = Nom de la base MongoDB
+- `SENTRY_DSN` = DSN de Sentry
+
+Positionnez-vous dans le dossier `${projet}/backend` puis lancez:
 
 ```
 composer install
-```
-
-### Paramétrer les variables d'environnement
-
-- Dupliquer le fichier .env et renommé le .env.local
-- Dans l’arborescence du projet rendez vous dans le fichier .env.local
-- les réglages qui vont y être fait seront pour une configuration en local
-
-Dans le fichier .env.local penser à commenté la ligne concernant le postgresql et décommenté la ligne mysql au dessus
-
-Sur la ligne MySQL rentrer les informations de la manière suivante
-
-DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name?serverVersion=8&charset=utf8mb4"
-
-- db_user : entrée un identifiant pour l'accés à la base de donnée
-- db_password : entrée mot de passe
-- db_name : entrée le nom de la base de donnée par exemple api-bilemo
-
-Enregistrez le fichier .env.local
-
-### Création de la base de donnée
-
-Placer vous dans le dossier backend
-
-Dans votre terminal
-
-```
 php bin/console doctrine:database:create
-```
-
-Cette commande va créer la base de donnée en récupérant le nom que nous avons donnés dans le fichier .env.local
-
-### Jouer les migrations pour créer les tables dans la base de données
-
-Tapez la commande dans votre terminal
-
-```
-php bin/console make:migration
 php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load
+symfony serve
+php bin/console websocket:serveur
 ```
 
-### Charger les données pour alimenter de données les tables
+#### Avec Docker (optionnel)
 
-Lancer la requete http://127.0.0.1:8000/equipment en POST avec les données de backend/sample.json pour avoir un jeu de données.
+Si vous utilisez Docker, exécutez:
 
-### Frontend
+```
+docker-compose up -d --build
+docker exec -it "nom_de_l_image" bash
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load
+php bin/console websocket:serveur
+```
 
-Placer vous dans le dossier frontend.
-Lancer dans la commande
+### Paramétrer le frontend
+
+Positionnez-vous dans le dossier `${projet}/frontend` puis lancez:
 
 ```
 npm install
 npm run dev
 ```
+
+Adapter les variables d’environnement du frontend dans `.env` si nécessaire.
