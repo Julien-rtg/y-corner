@@ -21,12 +21,13 @@ type WebSocketMessage = WebSocketNewMessage | WebSocketMessageSeen;
 export interface ChatProps {
     userId: number;
     recipientId: number;
+    recipientDetails: any;
     sendJsonMessage: (message: any) => void;
     lastJsonMessage: any;
     readyState: ReadyState;
 }
 
-function Chat({ userId, recipientId, sendJsonMessage, lastJsonMessage, readyState }: ChatProps) {
+function Chat({ userId, recipientId, recipientDetails, sendJsonMessage, lastJsonMessage, readyState }: ChatProps) {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<(ChatMessage | any)[]>([]);
     const [loading, setLoading] = useState(true);
@@ -136,11 +137,11 @@ function Chat({ userId, recipientId, sendJsonMessage, lastJsonMessage, readyStat
                             if (msg.fromUserId !== undefined) {
                                 isFromCurrentUser = parseInt(msg.fromUserId) === userId;
                                 messageText = msg.message;
-                                sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.fromUserId}`;
+                                sender = isFromCurrentUser ? 'Vous' : `${recipientDetails?.firstName || 'Utilisateur'} ${recipientDetails?.lastName || ''}`;
                             } else {
                                 isFromCurrentUser = msg.from === userId || msg.sent === true;
                                 messageText = msg.message;
-                                sender = isFromCurrentUser ? 'Vous' : `Utilisateur ${msg.from}`;
+                                sender = isFromCurrentUser ? 'Vous' : `${recipientDetails?.firstName || 'Utilisateur'} ${recipientDetails?.lastName || ''}`;
                             }
                             
                             return (

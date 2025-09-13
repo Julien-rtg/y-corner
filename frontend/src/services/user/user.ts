@@ -92,7 +92,7 @@ export class UserService {
         }
       });
       
-      throw error;
+      return { id: 0, firstName: 'Utilisateur introuvable', lastName: '' };
     }
   }
 

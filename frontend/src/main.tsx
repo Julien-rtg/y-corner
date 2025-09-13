@@ -1,5 +1,4 @@
 import App from './App.tsx';
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import './index.css';
@@ -23,11 +22,9 @@ if (container) {
   const root = createRoot(container);
   
   root.render(
-    <StrictMode>
       <Sentry.ErrorBoundary fallback={<div>Une erreur est survenue</div>}>
         <App />
       </Sentry.ErrorBoundary>
-    </StrictMode>
   );
 } else {
   console.error("Élément racine introuvable");

@@ -279,6 +279,7 @@ function ChatPage({ sendJsonMessage, lastJsonMessage, readyState }: any) {
                                                 <Chat
                                                     userId={user.id}
                                                     recipientId={parseInt(selectedConversation.recipientId)}
+                                                    recipientDetails={selectedConversation.recipientDetails}
                                                     sendJsonMessage={sendJsonMessage}
                                                     lastJsonMessage={lastJsonMessage}
                                                     readyState={readyState}
